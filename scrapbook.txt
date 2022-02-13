@@ -1,0 +1,71 @@
+ def partial_update(self, request, *args, **kwargs):
+         data = request.data
+         instance = self.queryset.get(pk=kwargs.get("pk"))
+         moneyout = MoneyOut.objects.get(report=instance.report)
+         report = Report.objects.get(pk=instance.report.pk)
+         for i in request.data.keys():
+             request.data[i] += instance.__dict__[i]
+         for i in request.data.keys():
+             data[i] -= moneyout.__dict__[i]
+         report_serializer = ReportSerializer(report, data=data, partial=True)
+         if report_serializer.is_valid(raise_exception=True):
+             report_serializer.save()
+         serializer = self.serializer_class(instance, data=request.data, partial=True)
+         if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+
+ money out calculations returning wrong
+
+ general_ledger = GeneralLedger.objects.get(date_created=datetime.date.today())
+        
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+
+
+    data.grand_total = currency_total + recievable_total[RECIEVABLE]['naira']
+    data.difference = (currency_total + recievable_total[RECIEVABLE]['naira']) - previous_grand_total
+    data.book_profit = ((currency_total + recievable_total[RECIEVABLE]['naira']) - previous_grand_total) + data.expenses
+
+
+    1. recieve CASH, give CASH
+    2. recieve CASH, do TRansfer
+    3. recieve TRANSFER, do TRANSFER
+    4. recieve TRANSFER, do CASH
+
+
+     # Update money out of the report
+            money_out = MoneyOut.objects.get(report=report)
+            setattr(
+                money_out,
+                currency_given.lower(),
+                getattr(money_out, currency_given.lower(), 0) + instance.amount_given,
+            )
+            money_out.save()
+
+            setattr(
+                report,
+                currency_given.lower(),
+                getattr(report, currency_given.lower(), 0) - instance.amount_given,
+            )
+
+{
+    "beneficiaries": "SINGLE_PAYMENT",
+    "customer_name1": "Aremu Oluwaseyi Festus",
+    "account_number1": "0235770003",
+    "bank_name1": "GTB",
+    "phone_number": "08034164740",
+    "address": "No. 5 Adiss Aluminium Crescent, Kubwa Anuja",
+    "recieved": "NAIRA",
+    "amount_recieved": 154000.00,
+    "mode": "CASH",
+    "rate": 785,
+    "given": "POUND",
+    "amount_given": 200,
+    "amount_transfered": 0.0,
+    "description": "TEST",
+    "initiator": "FRONTDESK",
+    "status" : "SENT",
+    "categories": "SALES",
+    "profit": 0.0
+}
