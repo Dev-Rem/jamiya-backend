@@ -155,30 +155,32 @@ def calculation_for_general_ledger(data=None):
 
 class TransactionHandler:
     def __init__(self, instance) -> None:
-        self.currecncy_recieved = instance.currency_recieved
+        self.currency_recieved = instance.currency_recieved
         self.currency_given = instance.currency_given
         self.instance = instance
 
         self.report = Report.objects.get(
             station=instance.initiator, date_created=datetime.date.today()
         )
-        
+
     def recieve_cash_give_cash(self):
-        setattr(
-                self.report,
-                self.currecncy_recieved.lower(),
-                getattr(self.report, self.currecncy_recieved.lower(), 0)
-                + self.instance.amount_recieved,
-            )
+        # Do cash to cash
         setattr(
             self.report,
-            self.currency_given.lower(),
-            getattr(self.report, self.currency_given.lower(), 0) - self.instance.amount_given,
+            self.currency_recieved.lower(),
+            getattr(self.report, self.currency_recieved.lower(), 0)
+            + self.instance.amount_recieved,
         )
         setattr(
             self.report,
-            self.instance.profit,
-            self.instance.profit + getattr(self.report, self.instance.profit, 0),
+            self.currency_given.lower(),
+            getattr(self.report, self.currency_given.lower(), 0)
+            - self.instance.amount_given,
+        )
+        setattr(
+            self.report,
+            "profit",
+            self.instance.profit + getattr(self.report, "profit", 0),
         )
 
         self.report.save()
@@ -187,8 +189,8 @@ class TransactionHandler:
         money_in = MoneyIn.objects.get(report=self.report)
         setattr(
             money_in,
-            self.currecncy_recieved.lower(),
-            getattr(money_in, self.currecncy_recieved.lower(), 0)
+            self.currency_recieved.lower(),
+            getattr(money_in, self.currency_recieved.lower(), 0)
             + self.instance.amount_recieved,
         )
         money_in.save()
@@ -198,29 +200,36 @@ class TransactionHandler:
         setattr(
             money_out,
             self.currency_given.lower(),
-            getattr(money_out, self.currency_given.lower(), 0) + self.instance.amount_given,
+            getattr(money_out, self.currency_given.lower(), 0)
+            + self.instance.amount_given,
         )
         money_out.save()
 
         update_closing_bal(report=self.report)
-    
-    
+
     def recieve_cash_do_transfer(self):
-        # Get account used for payment
-        account = Account.objects.get(bank_name=self.instance.paid_from)
-        print(account.bank_name)
+
         # Do cash to transfer
         setattr(
             self.report,
-            self.currecncy_recieved.lower(),
-            getattr(self.report, self.currecncy_recieved.lower(), 0)
+            self.currency_recieved.lower(),
+            getattr(self.report, self.currency_recieved.lower(), 0)
             + self.instance.amount_recieved,
         )
 
+        # Remove amount given from report
         setattr(
             self.report,
-            self.instance.profit,
-            self.instance.profit + getattr(self.report, self.instance.profit, 0),
+            self.currency_given.lower(),
+            getattr(self.report, self.currency_given.lower(), 0)
+            - self.instance.cash_given,
+        )
+
+        # Add profit to report
+        setattr(
+            self.report,
+            "profit",
+            self.instance.profit + getattr(self.report, "profit", 0),
         )
 
         self.report.save()
@@ -229,18 +238,113 @@ class TransactionHandler:
         money_in = MoneyIn.objects.get(report=self.report)
         setattr(
             money_in,
-            self.currecncy_recieved.lower(),
-            getattr(money_in, self.currecncy_recieved.lower(), 0)
+            self.currency_recieved.lower(),
+            getattr(money_in, self.currency_recieved.lower(), 0)
             + self.instance.amount_recieved,
         )
         money_in.save()
 
+        # Update money out of the report
+        money_out = MoneyOut.objects.get(report=self.report)
+        setattr(
+            money_out,
+            self.currency_given.lower(),
+            getattr(money_out, self.currency_given.lower(), 0)
+            + self.instance.cash_given,
+        )
+        money_out.save()
+
+        # Get account used for payment
+        account = Account.objects.get(bank_name=self.instance.paid_from)
+        setattr(
+            account,
+            self.currency_given.lower(),
+            getattr(account, self.currency_given.lower(), 0)
+            - self.instance.amount_transfered,
+        )
+        account.save()
         update_closing_bal(report=self.report)
-        pass 
-        
 
     def recieve_transfer_do_transfer(self):
-        pass
-    
+        # Do transfer to transfer
+
+        # Get account used for recieveing payment
+        recieving_account = Account.objects.get(bank_name=self.instance.transfered_to)
+        setattr(
+            recieving_account,
+            self.currency_recieved.lower(),
+            getattr(recieving_account, self.currency_recieved.lower())
+            + self.instance.amount_recieved,
+        )
+        recieving_account.save()
+
+        # Add profit to report
+        setattr(
+            self.report,
+            "profit",
+            self.instance.profit + getattr(self.report, "profit", 0),
+        )
+        self.report.save()
+
+        # Update money out of the report
+        money_out = MoneyOut.objects.get(report=self.report)
+        setattr(
+            money_out,
+            self.currency_given.lower(),
+            getattr(money_out, self.currency_given.lower(), 0)
+            + self.instance.cash_given,
+        )
+        money_out.save()
+
+        # Get account used for payment
+        account = Account.objects.get(bank_name=self.instance.paid_from)
+        setattr(
+            account,
+            self.currency_given.lower(),
+            getattr(account, self.currency_given.lower())
+            - self.instance.amount_transfered,
+        )
+        account.save()
+        update_closing_bal(report=self.report)
+
     def recieve_transfer_give_cash(self):
-        pass
+        # Get transfer and give cash
+
+        # Get account used for recieveing payment
+        recieving_account = Account.objects.get(bank_name=self.instance.transfered_to)
+        setattr(
+            recieving_account,
+            self.currency_recieved.lower(),
+            getattr(recieving_account, self.currency_recieved.lower())
+            + self.instance.amount_recieved,
+        )
+        recieving_account.save()
+
+        # Remove amount from report
+        setattr(
+            self.report,
+            self.currency_given.lower(),
+            getattr(self.report, self.currency_given.lower(), 0)
+            - self.instance.cash_given,
+        )
+        self.report.save()
+
+        # Add profit to report
+        setattr(
+            self.report,
+            "profit",
+            self.instance.profit + getattr(self.report, "profit", 0),
+        )
+        self.report.save()
+
+        # Update money out of the report
+        money_out = MoneyOut.objects.get(report=self.report)
+        setattr(
+            money_out,
+            self.currency_given.lower(),
+            getattr(money_out, self.currency_given.lower(), 0)
+            + self.instance.cash_given,
+        )
+        money_out.save()
+
+        update_closing_bal(report=self.report)

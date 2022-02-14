@@ -56,6 +56,13 @@ class Transaction(models.Model):
 
     phone_number = models.CharField(verbose_name="Phone Number", max_length=15)
     address = models.TextField(verbose_name="Address", max_length=1024)
+    transfered_to = models.CharField(
+        verbose_name="Transfered To",
+        max_length=50,
+        choices=BANKS,
+        default=PROVIDUS_BANK,
+        null=True,
+    )
     currency_recieved = models.CharField(
         verbose_name="Currency Recieved",
         choices=CURRENCIES,
@@ -70,7 +77,7 @@ class Transaction(models.Model):
         max_length=1024,
     )
     rate = models.FloatField(verbose_name="Rate of Exchange", default=0.00)
-    given_mode = models.CharField(
+    give_mode = models.CharField(
         verbose_name="How Money was given",
         choices=MODE,
         default=CASH,
@@ -82,13 +89,16 @@ class Transaction(models.Model):
         default=DOLLAR,
         max_length=1024,
     )
-    amount_given = models.FloatField(verbose_name="Amount given", default=0.00)
+    cash_given = models.FloatField(verbose_name="Amount given", default=0.00)
     amount_transfered = models.FloatField(
         verbose_name="Amount Transfered", default=0.00, blank=True
     )
     description = models.CharField(verbose_name="Description", max_length=1024)
     initiator = models.CharField(
-        verbose_name="Station", max_length=30, choices=EMPLOYEE_STATIONS, default=FRONTDESK
+        verbose_name="Station",
+        max_length=30,
+        choices=EMPLOYEE_STATIONS,
+        default=FRONTDESK,
     )
     status = models.CharField(
         verbose_name="Tansaction Status",
@@ -105,7 +115,9 @@ class Transaction(models.Model):
     profit = models.FloatField(
         verbose_name="Calculated Profit", default=0.0, blank=True
     )
-    paid_from = models.CharField(verbose_name='Payment From', max_length=50, choices=BANKS, default=ZENITH_BANK)
+    paid_from = models.CharField(
+        verbose_name="Payment From", max_length=50, choices=BANKS, default=ZENITH_BANK, null=True
+    )
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )

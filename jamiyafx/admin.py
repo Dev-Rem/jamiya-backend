@@ -46,7 +46,7 @@ class TransactionAdmin(admin.ModelAdmin):
         "customer_name1",
         "account_number1",
         "bank_name1",
-        "amount_given",
+        "cash_given",
         "amount_transfered",
         "initiator",
     )

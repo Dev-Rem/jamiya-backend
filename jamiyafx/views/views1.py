@@ -171,13 +171,23 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         buying_rate = Rate.objects.get(
-            date_created=datetime.date.today(), currency=request.data[1]["given"]
+            date_created=datetime.date.today(),
+            currency=request.data["currency_given"],
         ).buying
-        for i in request.data:
-            if i["categories"] == SALES:
-                i["profit"] = (i["rate"] - buying_rate) * i["amount_given"]
-
-        serializer = self.serializer_class(data=request.data, many=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if type(request.data) is list:
+            for i in request.data:
+                i["profit"] = (i["rate"] - buying_rate) * (
+                    i["cash_given"] + i["amount_transfered"]
+                )
+            serializer = self.serializer_class(data=request.data, many=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            request.data["profit"] = (request.data["rate"] - buying_rate) * (
+                request.data["cash_given"] + request.data["amount_transfered"]
+            )
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
