@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "jamiyafx.apps.JamiyafxConfig",
     "rest_framework",
     "rest_framework.authtoken",
+    "user.apps.UserConfig",
 ]
 
 MIDDLEWARE = [
