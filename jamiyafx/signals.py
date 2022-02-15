@@ -70,9 +70,17 @@ def update_report_and_account(sender, instance, created, **kwargs):
         transaction_handler = TransactionHandler(instance)
         if instance.recieve_mode == CASH and instance.give_mode == CASH:
             transaction_handler.recieve_cash_give_cash()
+            data = calculation_for_general_ledger()
+            data.save()
         elif instance.recieve_mode == CASH and instance.give_mode == TRANSFER:
             transaction_handler.recieve_cash_do_transfer()
+            data = calculation_for_general_ledger()
+            data.save()
         elif instance.recieve_mode == TRANSFER and instance.give_mode == TRANSFER:
             transaction_handler.recieve_transfer_do_transfer()
+            data = calculation_for_general_ledger()
+            data.save()
         elif instance.recieve_mode == TRANSFER and instance.give_mode == CASH:
             transaction_handler.recieve_transfer_give_cash()
+            data = calculation_for_general_ledger()
+            data.save()
