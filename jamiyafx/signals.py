@@ -58,12 +58,6 @@ def create_complete_report(sender, instance, created, **kwargs):
         instance.save()
 
 
-@receiver(post_save, sender=Account)
-def update_account(sender, instance, created, **kwargs):
-    data = calculation_for_general_ledger()
-    data.save()
-
-
 @receiver(post_save, sender=Transaction)
 def update_report_and_account(sender, instance, created, **kwargs):
     if created:

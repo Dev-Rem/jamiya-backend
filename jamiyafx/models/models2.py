@@ -168,6 +168,9 @@ class GeneralLedger(models.Model):
     grand_total = models.FloatField(
         verbose_name="Grand Total", default=0.00, blank=True
     )
+    previous_total = models.FloatField(
+        verbose_name="Previous Total", default=0.00, blank=True
+    )
     difference = models.FloatField(
         verbose_name="Difference Of Balance", default=0.00, blank=True
     )

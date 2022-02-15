@@ -1,7 +1,4 @@
-from ast import Pass
 import datetime
-from locale import currency
-from django.db.models import Sum
 
 from jamiyafx.models.models1 import *
 from jamiyafx.models.models2 import *
@@ -17,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 
@@ -25,6 +23,7 @@ from rest_framework.response import Response
 class MoneyInViewSet(viewsets.ModelViewSet):
     queryset = MoneyIn.objects.all()
     serializer_class = MoneyInSerializer
+    permission_classes = [IsAuthenticated]
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.queryset.get(pk=kwargs.get("pk"))
@@ -45,6 +44,7 @@ class MoneyInViewSet(viewsets.ModelViewSet):
 class MoneyOutViewSet(viewsets.ModelViewSet):
     queryset = MoneyOut.objects.all()
     serializer_class = MoneyOutSerializer
+    permission_classes = [IsAuthenticated]
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.queryset.get(pk=kwargs.get("pk"))
@@ -65,6 +65,7 @@ class MoneyOutViewSet(viewsets.ModelViewSet):
 class RateViewSet(viewsets.ModelViewSet):
     queryset = Rate.objects.all()
     serializer_class = RateSerializer
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False)
     def today_rates(self, request):
@@ -77,6 +78,7 @@ class RateViewSet(viewsets.ModelViewSet):
 class CustomerLedgerViewSet(viewsets.ModelViewSet):
     queryset = CustomerLedger.objects.all()
     serializer_class = CustomerLedgerSerializer
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -116,6 +118,7 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
 class GeneralLedgerViewSet(viewsets.ModelViewSet):
     queryset = GeneralLedger.objects.all()
     serializer_class = GeneralLedgerSerializer
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
 
@@ -141,11 +144,10 @@ class GeneralLedgerViewSet(viewsets.ModelViewSet):
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+    permission_classes = [IsAuthenticated]
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.queryset.get(pk=kwargs.get("pk"))
-        for i in request.data.keys():
-            request.data[i] += instance.__dict__[i]
         serializer = self.serializer_class(instance, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -168,6 +170,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         buying_rate = Rate.objects.get(

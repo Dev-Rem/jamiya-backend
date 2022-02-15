@@ -143,17 +143,21 @@ def calculation_for_general_ledger(data=None):
             previous_grand_total = GeneralLedger.objects.get(
                 date_created=datetime.date.today() - datetime.timedelta(days=1)
             ).grand_total
-
-        calculated_profit = Transaction.objects.filter(
-            date_created=datetime.date.today()
-        ).aggregate(Sum("profit"))["profit__sum"]
     except ObjectDoesNotExist:
-        previous_grand_total = GeneralLedger.objects.latest("date_created").grand_total
-        calculated_profit = 0.0
 
-    data.difference = float(data.grand_total) - previous_grand_total
+        previous_grand_total = data.grand_total
+
+    calculated_profit = Report.objects.filter(
+        date_created=datetime.date.today()
+    ).aggregate(Sum("profit"))["profit__sum"]
+
+    data.previous_total = previous_grand_total
+    data.difference = float(data.grand_total) - float(data.previous_total)
     data.book_profit = float(data.difference) + float(data.expense)
-    data.calculated_profit = calculated_profit
+    if calculated_profit:
+        data.calculated_profit = calculated_profit
+    else:
+        data.calculated_profit = 0
     data.variance = float(data.book_profit) - float(data.calculated_profit)
 
     return data
@@ -181,7 +185,7 @@ class TransactionHandler:
             self.report,
             self.currency_given.lower(),
             getattr(self.report, self.currency_given.lower(), 0)
-            - self.instance.amount_given,
+            - self.instance.cash_given,
         )
         setattr(
             self.report,
@@ -207,7 +211,7 @@ class TransactionHandler:
             money_out,
             self.currency_given.lower(),
             getattr(money_out, self.currency_given.lower(), 0)
-            + self.instance.amount_given,
+            + self.instance.cash_given,
         )
         money_out.save()
 
