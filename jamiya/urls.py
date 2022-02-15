@@ -16,9 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt import views as jwt_views
+from decouple import config
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(config("ADMIN_URL"), admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
     path("api/", include("jamiyafx.urls")),
     path("api/users/", include("user.urls")),

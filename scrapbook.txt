@@ -69,3 +69,6 @@
     "categories": "SALES",
     "profit": 0.0
 }
+
+
+user register link: https://python.plainenglish.io/django-rest-framework-jwt-auth-with-login-and-register-77f830cd8789

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 from datetime import timedelta
 import os
+from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "on#*(*84jp!w)w%l!e&qtx%!0c60swe-7y7whr#xg(!@s_=m)%"
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -108,15 +109,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = config("LANGUAGE_CODE")
 
-TIME_ZONE = "Africa/Lagos"
+TIME_ZONE = config("TIME_ZONE")
 
-USE_I18N = True
+USE_I18N = config("USE_I18N")
 
-USE_L10N = True
+USE_L10N = config("USE_L10N")
 
-USE_TZ = False
+USE_TZ = config("USE_TZ")
 
 
 # Static files (CSS, JavaScript, Images)
@@ -138,5 +139,10 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        hours=int(config("SIMPLE_JWT_ACCESS_TOKEN_LIFETIME"))
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=int(config("SIMPLE_JWT_REFRESH_TOKEN_LIFETIME"))
+    ),
 }
