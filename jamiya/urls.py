@@ -24,9 +24,13 @@ urlpatterns = [
     path("api/", include("jamiyafx.urls")),
     path("api/users/", include("user.urls")),
     path(
-        "api/token/", jwt_views.TokenObtainPairView.as_view(), name="token_obtain_pair"
+        "api/tokens/",
+        jwt_views.TokenObtainPairView.as_view(),
+        name="token_pair",
     ),
     path(
-        "api/token/refresh/", jwt_views.TokenRefreshView.as_view(), name="token_refresh"
+        "api/tokens/refresh/",
+        jwt_views.TokenRefreshView.as_view(),
+        name="token_refresh",
     ),
 ]
