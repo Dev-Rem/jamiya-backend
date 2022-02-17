@@ -28,23 +28,6 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
 
-# Report Model views
-class ReportViewSet(viewsets.ModelViewSet):
-    queryset = Report.objects.all()
-    serializer_class = ReportSerializer
-    permission_classes = [IsAuthenticated]
-
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
-
-
 # Opening balance Model Views
 class OpeningBalanceViewSet(viewsets.ModelViewSet):
     queryset = OpeningBalance.objects.all()

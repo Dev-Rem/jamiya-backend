@@ -50,7 +50,7 @@ class MoneyInViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(instance, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            update_closing_bal(report=report)
+            # update_closing_bal(report=report)
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
@@ -101,11 +101,19 @@ class RateViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, many=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        return super().create(request, *args, **kwargs)
+
     @action(detail=False)
     def today_rates(self, request):
-        rates = Rate.objects.filter(date_created=datetime.date.today())
-        serializer = self.get_serializer(rates, many=True)
-        return Response(serializer.data)
+        today_rates = Rate.objects.filter(date_created=datetime.date.today())
+        if today_rates:
+            serializer = self.get_serializer(today_rates, many=True)
+            return Response(serializer.data)
+        return Response({"status": "There are no rates for today"})
 
 
 # CustomerLedger Model Views
@@ -125,12 +133,18 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            data = calculation_for_general_ledger()
-            data.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        instance = CustomerLedger.objects.last()
+        if datetime.date.today() != instance.date_created:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                # data = calculation_for_general_ledger()
+                # data.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            {"status": "Already created report for today"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.queryset.get(pk=kwargs.get("pk"))
@@ -139,8 +153,8 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(instance, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            data = calculation_for_general_ledger()
-            data.save()
+            # data = calculation_for_general_ledger()
+            # data.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
@@ -149,7 +163,9 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
             self.perform_destroy(instance)
             data = calculation_for_general_ledger()
             data.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {"status": "Delete Successful"}, status=status.HTTP_204_NO_CONTENT
+            )
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -175,11 +191,17 @@ class GeneralLedgerViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        data = calculation_for_general_ledger(data=request.data)
-        serializer = self.serializer_class(data=data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        return Response(data, status=status.HTTP_201_CREATED)
+        instance = GeneralLedger.objects.last()
+        if datetime.date.today() != instance.date_created:
+            data = calculation_for_general_ledger(data=request.data)
+            serializer = self.serializer_class(data=data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+            return Response(data, status=status.HTTP_201_CREATED)
+        return Response(
+            {"status": "Already created report for today"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.queryset.get(pk=kwargs.get("pk"))
@@ -234,7 +256,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
     permission_classes = [IsAuthenticated]
-    
+
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
@@ -267,3 +289,63 @@ class TransactionViewSet(viewsets.ModelViewSet):
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# Report Model views
+class ReportViewSet(viewsets.ModelViewSet):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(CACHE_TTL))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        instance = CustomerLedger.objects.last()
+        if (datetime.date.today() != instance.date_created) and (
+            request.data["station"] != instance.station
+        ):
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+            return Response(request.data, status=status.HTTP_201_CREATED)
+        return Response(
+            {"status": "Already created report for today"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # @method_decorator(vary_on_cookie)
+    # @method_decorator(cache_page(CACHE_TTL))
+    def retrieve(self, request, *args, **kwargs):
+        print("using this view")
+        instance = self.queryset.get(pk=kwargs.get("pk"))
+        report_serializer = ReportSerializer(instance, context={"request": request})
+
+        money_in = MoneyIn.objects.get(report=instance)
+        money_in_serializer = MoneyInSerializer(money_in, context={"request": request})
+
+        money_out = MoneyOut.objects.get(report=instance)
+        money_out_serializer = MoneyOutSerializer(
+            money_out, context={"request": request}
+        )
+
+        opening_bal = OpeningBalance.objects.get(report=instance)
+        opening_bal_serializer = OpeningBalanceSerializer(
+            opening_bal, context={"request": request}
+        )
+
+        closing_bal = ClosingBalance.objects.get(report=instance)
+        closing_bal_serializer = ClosingBalanceSerializer(
+            closing_bal, context={"request": request}
+        )
+
+        data = {
+            "report": report_serializer.data,
+            "money_in": money_in_serializer.data,
+            "money_out": money_out_serializer.data,
+            "opening_balance": opening_bal_serializer.data,
+            "closing_balance": closing_bal_serializer.data,
+        }
+        return Response(data, status=status.HTTP_200_OK)

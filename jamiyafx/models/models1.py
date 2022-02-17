@@ -5,20 +5,6 @@ from .variables import *
 # Create your models here.
 
 
-class Currency(models.Model):
-    naira = models.FloatField(verbose_name="Naira Balance", default=0.00)
-    dollar = models.FloatField(verbose_name="Dollar Balance", default=0.00)
-    pound = models.FloatField(verbose_name="Pound Balance", default=0.00)
-    euro = models.FloatField(verbose_name="Euro Balance", default=0.00)
-    date_created = models.DateField(
-        verbose_name="Date Added", auto_now=False, auto_now_add=True
-    )
-    last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)
-
-    class Meta:
-        ordering = ["-date_created"]
-
-
 class Rate(models.Model):
     currency = models.CharField(
         verbose_name="Station", max_length=30, choices=CURRENCIES, default=DOLLAR
@@ -51,7 +37,7 @@ class Account(models.Model):
     last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)
 
     class Meta:
-        ordering = ["date_created"]
+        ordering = ["-date_created"]
 
 
 class Employee(models.Model):
