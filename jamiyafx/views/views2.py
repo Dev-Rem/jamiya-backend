@@ -1,4 +1,5 @@
-from jamiyafx.models import *
+from jamiyafx.models.models1 import *
+from jamiyafx.models.models2 import *
 from jamiyafx.serializers import *
 
 from decouple import config

@@ -2,7 +2,6 @@ import datetime
 
 from jamiyafx.models.models1 import *
 from jamiyafx.models.models2 import *
-from jamiyafx.models.variables import RECIEVABLE, PAYABLE
 from jamiyafx.serializers import *
 from jamiyafx.utils import (
     update_closing_bal,
@@ -102,16 +101,27 @@ class RateViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, many=True)
+        serializer = RateSerializer(data=request.data, many=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-        return super().create(request, *args, **kwargs)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.queryset.get(pk=kwargs.get("pk"))
+        serializer = self.serializer_class(instance, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            data = calculation_for_general_ledger()
+            data.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False)
     def today_rates(self, request):
         today_rates = Rate.objects.filter(date_created=datetime.date.today())
         if today_rates:
-            serializer = self.get_serializer(today_rates, many=True)
+            serializer = self.get_serializer(
+                today_rates, many=True, context={"request": request}
+            )
             return Response(serializer.data)
         return Response({"status": "There are no rates for today"})
 
