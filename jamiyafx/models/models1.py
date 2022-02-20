@@ -112,3 +112,15 @@ class MoneyOut(models.Model):
 
     class Meta:
         ordering = ["-date_created"]
+
+
+class Receipt(models.Model):
+    customer_name = models.CharField(verbose_name="Customer Name", max_length=1024)
+    phone_number = models.CharField(verbose_name="Phone Number", max_length=15)
+    receipt = models.FileField(
+        verbose_name="Receipt", upload_to="receipts/% Y/% m/% d/"
+    )
+    date_created = models.DateField(
+        verbose_name="Date Added", auto_now=False, auto_now_add=True
+    )
+    last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)

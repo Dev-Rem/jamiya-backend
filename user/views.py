@@ -1,4 +1,3 @@
-from functools import partial
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +7,12 @@ from rest_framework_simplejwt.token_blacklist.models import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from decouple import config
 from django.contrib.auth.models import User
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
+
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
@@ -19,6 +23,7 @@ from .serializers import (
 
 
 # Create your views here.
+CACHE_TTL = int(config("CACHE_TTL"))
 
 
 class UserDetailView(generics.RetrieveAPIView):
@@ -26,6 +31,8 @@ class UserDetailView(generics.RetrieveAPIView):
     serializer_class = UserDetailSerializer
     permission_classes = (IsAuthenticated,)
 
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, *args, **kwargs):
         try:
             instance = User.objects.get(pk=request.user.id)

@@ -65,3 +65,8 @@ class CustomerLedgerAdmin(admin.ModelAdmin):
 @admin.register(GeneralLedger)
 class GeneralLedgerAdmin(admin.ModelAdmin):
     list_display = ("naira", "dollar", "pound", "euro", "calculated_profit", "variance")
+
+
+@admin.register(Receipt)
+class ReceiptAdmin(admin.ModelAdmin):
+    list_display = ("customer_name", "phone_number", "receipt")

@@ -72,7 +72,7 @@
 
 
 user register link: https://python.plainenglish.io/django-rest-framework-jwt-auth-with-login-and-register-77f830cd8789
-
+user update link: https://medium.com/django-rest/django-rest-framework-change-password-and-update-profile-1db0c144c0a3
 
 class Currency(models.Model):
     naira = models.FloatField(verbose_name="Naira Balance", default=0.00)
