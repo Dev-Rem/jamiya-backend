@@ -145,7 +145,7 @@ SIMPLE_JWT = {
         hours=int(config("SIMPLE_JWT_ACCESS_TOKEN_LIFETIME"))
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
-        days=int(config("SIMPLE_JWT_REFRESH_TOKEN_LIFETIME"))
+        hours=int(config("SIMPLE_JWT_REFRESH_TOKEN_LIFETIME"))
     ),
     "SIGNING_KEY": config("SECRET_KEY"),
     "ROTATE_REFRESH_TOKENS": True,

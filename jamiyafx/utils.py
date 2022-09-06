@@ -1,11 +1,14 @@
+from jamiyafx.serializers import GeneralLedgerSerializer
+from jamiyafx.models.models2 import *
+from jamiyafx.models.models1 import *
+from jamiyafx.models.variables import PAYABLE, RECIEVABLE, NAIRA, DOLLAR, POUND, EURO
 import json
+from multiprocessing import context
+from urllib import request
 from django.db.models import Sum
 from django.core.exceptions import ObjectDoesNotExist
-
-from jamiyafx.models.variables import PAYABLE, RECIEVABLE, NAIRA, DOLLAR, POUND, EURO
-from jamiyafx.models.models1 import *
-from jamiyafx.models.models2 import *
-from jamiyafx.serializers import GeneralLedgerSerializer
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 
 
 class Dotdict(dict):
@@ -15,21 +18,20 @@ class Dotdict(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-
-def get_rate():
-    # Find a way to get rate for the current day or use previous day rate
-    pass
+# function to update the closing balance of a report
 
 
 def update_closing_bal(report):
+    # get report variables for the report parsed
     closing_bal = ClosingBalance.objects.get(report=report)
     opening_bal = OpeningBalance.objects.get(report=report)
     money_in = MoneyIn.objects.get(report=report)
     money_out = MoneyOut.objects.get(report=report)
 
-    # Get account
+    # Get the account for the report parsed
     account = Account.objects.get(bank_name=report.station)
 
+    # update account values witht the closing balance calculated with variables for diffrent currencies
     account.naira = closing_bal.naira = (
         opening_bal.naira + money_in.naira
     ) - money_out.naira
@@ -46,8 +48,10 @@ def update_closing_bal(report):
     account.save()
 
 
+# function to get customer ledger totals
 def get_customerledger_total():
 
+    # check if there exists any customer ledger with the status "RECIEVABLE"
     if CustomerLedger.objects.filter(status=RECIEVABLE).exists():
         recievable_totals = {
             RECIEVABLE: {
@@ -65,10 +69,12 @@ def get_customerledger_total():
                 )["euro__sum"],
             }
         }
+    # else set values to "0"
     else:
         recievable_totals = {
             RECIEVABLE: {"naira": 0, "dollar": 0, "pound": 0, "euro": 0},
         }
+    # check if there exists any customer ledger with the status "RECIEVABLE"
     if CustomerLedger.objects.filter(status=PAYABLE).exists():
         payable_totals = {
             PAYABLE: {
@@ -86,7 +92,7 @@ def get_customerledger_total():
                 )["euro__sum"],
             },
         }
-
+    # else set values to "0"
     else:
         payable_totals = {
             PAYABLE: {"naira": 0, "dollar": 0, "pound": 0, "euro": 0},
@@ -94,17 +100,25 @@ def get_customerledger_total():
     return recievable_totals, payable_totals
 
 
+# function to calculate general ledger
 def calculation_for_general_ledger(data=None):
-    # finding a way to calculate the report CHILLL!!!!
+
+    factory = APIRequestFactory()
+    request = factory.get('/')
+
+    # get customer ledger totals
     (recievable_totals, payable_totals) = get_customerledger_total()
+
+    # check if data is parsed or not
     if data is None:
         data = GeneralLedger.objects.get(date_created=datetime.date.today())
     else:
-        serializer = GeneralLedgerSerializer(data=data)
+        serializer = GeneralLedgerSerializer(
+            data=data, context={"request": Request(request)})
         if serializer.is_valid(raise_exception=True):
             data = Dotdict(serializer.data)
 
-        # Get the total sum of all accounts for the four currencies and substract the values in payable then multiply by current rate
+    # Get the total sum of all accounts for the four currencies and substract the values in payable then multiply by current rate
     naira_total = (
         Account.objects.all().aggregate(Sum("naira"))["naira__sum"]
         + payable_totals[PAYABLE]["naira"]
@@ -125,15 +139,19 @@ def calculation_for_general_ledger(data=None):
         + payable_totals[PAYABLE]["euro"]
     ) * Rate.objects.get(date_created=datetime.date.today(), currency=EURO).buying
 
+    # calculate curency total
     currency_total = naira_total + dollar_total + pound_total + euro_total
 
+    # assign values to the data
     data.naira = naira_total
     data.dollar = dollar_total
     data.pound = pound_total
     data.euro = euro_total
     data.currency_total = currency_total
 
+    # calculate for grand total
     data.grand_total = currency_total + recievable_totals[RECIEVABLE]["naira"]
+    # try to get previous general ledger grand total and assign to prervious total of current day
     try:
         if datetime.datetime.today().weekday() == 0:
             previous_grand_total = GeneralLedger.objects.get(
@@ -147,12 +165,16 @@ def calculation_for_general_ledger(data=None):
 
         previous_grand_total = data.grand_total
 
+    # get the total sum of all profit calculated from reports created at present day
     calculated_profit = Report.objects.filter(
         date_created=datetime.date.today()
     ).aggregate(Sum("profit"))["profit__sum"]
 
+    # assign previous total
     data.previous_total = previous_grand_total
+    # assign the difference of previous total and present grand total
     data.difference = float(data.grand_total) - float(data.previous_total)
+    # calculate book profit from difference and expense
     data.book_profit = float(data.difference) + float(data.expense)
     if calculated_profit:
         data.calculated_profit = calculated_profit
@@ -162,7 +184,7 @@ def calculation_for_general_ledger(data=None):
 
     return data
 
-
+# a transaction handler util class to handle the forms of transaction
 class TransactionHandler:
     def __init__(self, instance) -> None:
         self.currency_recieved = instance.currency_recieved
@@ -265,7 +287,7 @@ class TransactionHandler:
         money_out.save()
 
         # Get account used for payment
-        account = Account.objects.get(bank_name=self.instance.paid_from)
+        account = Account.objects.get(account_name=self.instance.paid_from)
         setattr(
             account,
             self.currency_given.lower(),
@@ -276,10 +298,9 @@ class TransactionHandler:
         update_closing_bal(report=self.report)
 
     def recieve_transfer_do_transfer(self):
-        # Do transfer to transfer
-
         # Get account used for recieveing payment
-        recieving_account = Account.objects.get(bank_name=self.instance.transfered_to)
+        recieving_account = Account.objects.get(
+            account_name=self.instance.transfered_to)
         setattr(
             recieving_account,
             self.currency_recieved.lower(),
@@ -307,7 +328,7 @@ class TransactionHandler:
         money_out.save()
 
         # Get account used for payment
-        account = Account.objects.get(bank_name=self.instance.paid_from)
+        account = Account.objects.get(account_name=self.instance.paid_from)
         setattr(
             account,
             self.currency_given.lower(),
@@ -321,7 +342,8 @@ class TransactionHandler:
         # Get transfer and give cash
 
         # Get account used for recieveing payment
-        recieving_account = Account.objects.get(bank_name=self.instance.transfered_to)
+        recieving_account = Account.objects.get(
+            account_name=self.instance.transfered_to)
         setattr(
             recieving_account,
             self.currency_recieved.lower(),

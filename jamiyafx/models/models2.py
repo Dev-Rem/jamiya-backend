@@ -13,7 +13,8 @@ class OpeningBalance(models.Model):
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )
-    last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)
+    last_updated = models.DateTimeField(
+        verbose_name="Date Last Updated", auto_now=True)
 
     class Meta:
         ordering = ["-date_created"]
@@ -28,7 +29,8 @@ class ClosingBalance(models.Model):
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )
-    last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)
+    last_updated = models.DateTimeField(
+        verbose_name="Date Last Updated", auto_now=True)
 
     class Meta:
         ordering = ["-date_created"]
@@ -41,8 +43,10 @@ class Transaction(models.Model):
         choices=PAYMENT,
         default=SINGLE_PAYMENT,
     )
-    customer_name1 = models.CharField(verbose_name="Customer Name 1", max_length=1024)
-    account_number1 = models.CharField(verbose_name="Account Number 1", max_length=10)
+    customer_name1 = models.CharField(
+        verbose_name="Customer Name 1", max_length=1024)
+    account_number1 = models.CharField(
+        verbose_name="Account Number 1", max_length=10)
     bank_name1 = models.CharField(verbose_name="Bank Name 1", max_length=100)
     customer_name2 = models.CharField(
         verbose_name="Customer Name 2", max_length=1024, blank=True
@@ -69,7 +73,8 @@ class Transaction(models.Model):
         default=DOLLAR,
         max_length=1024,
     )
-    amount_recieved = models.FloatField(verbose_name="Amount Recieved", default=0.00)
+    amount_recieved = models.FloatField(
+        verbose_name="Amount Recieved", default=0.00)
     recieve_mode = models.CharField(
         verbose_name="How Money was Recieved",
         choices=MODE,
@@ -121,7 +126,8 @@ class Transaction(models.Model):
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )
-    last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)
+    last_updated = models.DateTimeField(
+        verbose_name="Date Last Updated", auto_now=True)
 
     @property
     def receipt_number(self):
@@ -139,7 +145,8 @@ class CustomerLedger(models.Model):
     dollar = models.FloatField(verbose_name="Dollar Balance", default=0.00)
     pound = models.FloatField(verbose_name="Pound Balance", default=0.00)
     euro = models.FloatField(verbose_name="Euro Balance", default=0.00)
-    description = models.TextField(verbose_name="Description", null=True, blank=True)
+    description = models.TextField(
+        verbose_name="Description", null=True, blank=True)
     status = models.CharField(
         verbose_name="Status of Payment",
         choices=DEBTORS,
@@ -151,17 +158,22 @@ class CustomerLedger(models.Model):
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )
-    last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)
+    last_updated = models.DateTimeField(
+        verbose_name="Date Last Updated", auto_now=True)
 
     class Meta:
         ordering = ["-date_created"]
 
 
 class GeneralLedger(models.Model):
-    naira = models.FloatField(verbose_name="Naira Balance", default=0.00, blank=True)
-    dollar = models.FloatField(verbose_name="Dollar Balance", default=0.00, blank=True)
-    pound = models.FloatField(verbose_name="Pound Balance", default=0.00, blank=True)
-    euro = models.FloatField(verbose_name="Euro Balance", default=0.00, blank=True)
+    naira = models.FloatField(
+        verbose_name="Naira Balance", default=0.00, blank=True)
+    dollar = models.FloatField(
+        verbose_name="Dollar Balance", default=0.00, blank=True)
+    pound = models.FloatField(
+        verbose_name="Pound Balance", default=0.00, blank=True)
+    euro = models.FloatField(
+        verbose_name="Euro Balance", default=0.00, blank=True)
     currency_total = models.FloatField(
         verbose_name="Currency Total", default=0.00, blank=True
     )
@@ -174,7 +186,8 @@ class GeneralLedger(models.Model):
     difference = models.FloatField(
         verbose_name="Difference Of Balance", default=0.00, blank=True
     )
-    expense = models.FloatField(verbose_name="Expenses", default=0.00, blank=True)
+    expense = models.FloatField(
+        verbose_name="Expenses", default=0.00, blank=True)
     book_profit = models.FloatField(
         verbose_name="Book Profit", default=0.00, blank=True
     )
@@ -188,7 +201,8 @@ class GeneralLedger(models.Model):
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )
-    last_updated = models.DateTimeField(verbose_name="Date Last Updated", auto_now=True)
+    last_updated = models.DateTimeField(
+        verbose_name="Date Last Updated", auto_now=True)
 
     class Meta:
         ordering = ["-date_created"]

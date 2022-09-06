@@ -28,14 +28,15 @@ def create_complete_report(sender, instance, created, **kwargs):
         # Create opening balance object and attach it to report (instance)
         opening_bal = OpeningBalance.objects.create(report=instance)
 
+        # try get previous report from appropriate day
         try:
-            # Check that the day is Monday or not and get previous report
+            # Check that the day is Monday and get previous report from previous week
             if datetime.datetime.today().weekday() == 0:
                 previous_report = Report.objects.get(
                     station=instance.station,
                     date_created=datetime.datetime.today() - datetime.timedelta(days=3),
                 )
-
+            # else get previous day report
             else:
                 previous_report = Report.objects.get(
                     station=instance.station,
@@ -45,8 +46,9 @@ def create_complete_report(sender, instance, created, **kwargs):
         except ObjectDoesNotExist:
             previous_report = Report.objects.all()[1]
 
-        # Get previous closing balance
-        previous_closing_bal = ClosingBalance.objects.get(report=previous_report)
+        # Get previous report closing balance
+        previous_closing_bal = ClosingBalance.objects.get(
+            report=previous_report)
 
         # Assign previous day closing balance to current (instance) opening balance
         instance.naira = opening_bal.naira = previous_closing_bal.naira
@@ -54,10 +56,12 @@ def create_complete_report(sender, instance, created, **kwargs):
         instance.pound = opening_bal.pound = previous_closing_bal.pound
         instance.euro = opening_bal.euro = previous_closing_bal.euro
         opening_bal.save()
+        # update closing balance
         update_closing_bal(instance)
         instance.save()
 
 
+# signal function to update report and account based on changes
 @receiver(post_save, sender=Transaction)
 def update_report_and_account(sender, instance, created, **kwargs):
     if created:

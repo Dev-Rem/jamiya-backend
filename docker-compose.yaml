@@ -11,25 +11,8 @@ services:
       - "8000:8000"
     volumes: 
       - .:/usr/src/jamiya
-    # environment:
-    #   - POSTGRES_HOST=${DB_HOST}
-    #   - POSTGRES_DB=${DB_NAME}
-    #   - POSTGRES_USER=${DB_USER}
-    #   - POSTGRES_PASSWORD=${DB_PASSWORD}
+
     depends_on:
-      # - db
       - redis
-      # - elasticsearch
   redis:
     image: "redis:alpine"
-  # db:
-  #   image: postgres
-  #   env_file: 
-  #     - .env
-  #   environment:
-  #     - POSTGRES_HOST=${DB_HOST}
-  #     - POSTGRES_DB=${DB_NAME}
-  #     - POSTGRES_USER=${DB_USER}
-  #     - POSTGRES_PASSWORD=${DB_PASSWORD}
-  #   ports:
-  #     - "5432:5432"

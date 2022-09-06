@@ -4,6 +4,8 @@ from rest_framework import serializers
 from jamiyafx.models.models1 import *
 from jamiyafx.models.models2 import *
 
+# serializers for all models
+
 
 class AccountSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -23,7 +25,7 @@ class ReportSerializer(serializers.HyperlinkedModelSerializer):
         fields = "__all__"
 
 
-class MoneyInSerializer(serializers.HyperlinkedModelSerializer):
+class MoneyInSerializer(serializers.ModelSerializer):
     class Meta:
         model = MoneyIn
         fields = "__all__"
@@ -65,7 +67,7 @@ class CustomerLedgerSerializer(serializers.HyperlinkedModelSerializer):
         fields = "__all__"
 
 
-class GeneralLedgerSerializer(serializers.HyperlinkedModelSerializer):
+class GeneralLedgerSerializer(serializers.ModelSerializer):
     class Meta:
         model = GeneralLedger
         fields = "__all__"
