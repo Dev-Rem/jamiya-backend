@@ -86,29 +86,25 @@ class ClosingBalanceSerializer(serializers.ModelSerializer):
         model = ClosingBalance
         fields = ['id', "report", 'currencies', 'date_created']
 
-class ReceivingSerializer(serializers.ModelSerializer):
+class ReceiveGiveSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Receiving
+        model = ReceiveGive
         fields = "__all__"
 
-class GivingSerializer(serializers.ModelSerializer):
+
+class BeneficiarySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Giving
+        model = Beneficiary
         fields = "__all__"
+
 
 class TransactionSerializer(serializers.ModelSerializer):
-    receiving = ReceivingSerializer(many=True, read_only=True)
-    giving = GivingSerializer(many=True, read_only=True)
+    receive_give = ReceiveGiveSerializer(many=True, read_only=True)
+    beneficiaries = BeneficiarySerializer(many=True, read_only=True)
     
     class Meta:
         model = Transaction
         fields = ["id",
-            "customer_name1",
-            "account_number1",
-            "bank_name1",
-            "customer_name2",
-            "account_number2",
-            "bank_name2",
             "phone_number",
             "address",
             "description",
@@ -118,11 +114,8 @@ class TransactionSerializer(serializers.ModelSerializer):
             "profit",
             "receipt_number",
             "date_created",
-            "last_updated", 'receiving', 'giving']
+            "last_updated", 'receive_give', 'beneficiaries']
         
-        
-
-
 class RateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rate

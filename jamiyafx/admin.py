@@ -43,18 +43,17 @@ class ClosingBalanceAdmin(admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = (
-        "customer_name1",
         "receipt_number",
         "initiator",
     )
 
-@admin.register(Receiving)
-class ReceivingAdmin(admin.ModelAdmin):
-    list_display=( 'currency_received', 'receive_mode')
+@admin.register(Beneficiary)
+class BeneficiaryAdmin(admin.ModelAdmin):
+    list_display =('transaction', 'customer_account_name', 'customer_account_number', 'customer_bank_name')
     
-@admin.register(Giving)
-class GivingAdmin(admin.ModelAdmin):
-    list_display=( 'currency_given', 'give_mode')
+@admin.register(ReceiveGive)
+class ReceiveGiveAdmin(admin.ModelAdmin):
+    list_display=( 'transaction','currency', 'mode')
     
 
 @admin.register(Rate)

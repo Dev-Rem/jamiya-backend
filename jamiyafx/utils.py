@@ -160,20 +160,26 @@ def calculation_for_general_ledger(data=None):
 
 
 
-def create_receiving_and_giving(receiving, giving, transaction):
-    for i in receiving:
-            receiving = Receiving.objects.create(transaction=transaction, **i)
-            receiving.save()
-    for j in giving:
-        giving = Giving.objects.create(transaction=transaction, **j)
-        giving.save()
+def create_beneficiary_receiving_and_giving(receive_give,transaction, benficiaries = None):
+    
+    for i in receive_give:
+        obj = ReceiveGive.objects.create(transaction=transaction, **i)
+        obj.save()
+    
+    if benficiaries != None:
+        for k in benficiaries:
+            beneficiary = Beneficiary.objects.create(transaction=transaction, **k)
+            beneficiary.save()
 
 def get_profit_for_sales(data):
     profit = 0
     for i in data:
-        rate = Rate.objects.get(currency=i['currency_given']).buying
+        rate = Rate.objects.get(currency=i['currency']).buying
         
         profit += (i["selling_rate"] - rate) * (i['cash_given']+i['give_amount_transfered'])
 
     return profit
 
+
+def transaction_calculation():
+    pass

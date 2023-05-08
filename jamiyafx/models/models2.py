@@ -37,27 +37,10 @@ class ClosingBalance(models.Model):
 
 
 class Transaction(models.Model):
-    customer_name1 = models.CharField(
-        verbose_name="Customer Name 1", max_length=1024)
-    account_number1 = models.CharField(
-        verbose_name="Account Number 1", max_length=10, blank=True)
-    bank_name1 = models.CharField(
-        verbose_name="Bank Name 1", max_length=100, blank=True)
-    customer_name2 = models.CharField(
-        verbose_name="Customer Name 2", max_length=1024, blank=True
-    )
-    account_number2 = models.CharField(
-        verbose_name="Account Number 2", max_length=10, blank=True
-    )
-    bank_name2 = models.CharField(
-        verbose_name="Bank Name 2", max_length=100, blank=True
-    )
-
+    beneficiaries = models.CharField(verbose_name='Beneficiaries', choices=BENEFICIARIES, default=SINGLE_PAYMENT,max_length=1024)
     phone_number = models.CharField(verbose_name="Phone Number", max_length=15)
     address = models.TextField(verbose_name="Address", max_length=1024)
-
-
-    description = models.CharField(verbose_name="Description", max_length=1024)
+    description = models.TextField(verbose_name="Description", max_length=1024)
     initiator = models.CharField(
         verbose_name="Station",
         max_length=30,
@@ -91,69 +74,61 @@ class Transaction(models.Model):
     class Meta:
         ordering = ["-date_created"]
 
-class Receiving(models.Model):
-    transaction = models.ForeignKey(Transaction, related_name='receiving', on_delete=models.CASCADE)
+class Beneficiary(models.Model):
+    transaction = models.ForeignKey(Transaction, related_name='beneficiary', on_delete=models.CASCADE, null=True)
+    customer_account_name = models.CharField(
+        verbose_name="Customer Account Name ", max_length=1024)
+    customer_account_number = models.CharField(
+        verbose_name="Customer Account Number ", max_length=10, blank=True)
+    customer_bank_name = models.CharField(
+        verbose_name="Customer Bank Name", max_length=100, blank=True)
+    transfer = models.FloatField(
+        verbose_name="Amount Transfered", default=0.00, blank=True
+    )
+    date_created = models.DateField(
+        verbose_name="Date Added", auto_now=False, default=datetime.now
+    )
     
-    receive_bank_name = models.CharField(
+    last_updated = models.DateTimeField(
+        verbose_name="Date Last Updated", auto_now=True)
+    
+class ReceiveGive(models.Model):
+    transaction = models.ForeignKey(Transaction, related_name='receive_give', on_delete=models.CASCADE)
+    status = models.CharField(
+        verbose_name="Receiving or Giving",
+        choices=STATUS,
+        default=RECEIVING,
+        max_length=1024,
+    )
+    bank_name = models.CharField(
         verbose_name="Bank Name",  max_length=2048, blank=True)
-    receive_account_name = models.CharField(
+    account_name = models.CharField(
         verbose_name="Account Name",  max_length=2048, blank=True)
-    currency_received = models.CharField(
+    currency = models.CharField(
         verbose_name="Currency Recieved",
         choices=CURRENCIES,
         default=DOLLAR,
         max_length=1024,
     )
-    cash_received = models.FloatField(
+    cash = models.FloatField(
         verbose_name="Cash Recieved", default=0.00)
-    receive_mode = models.CharField(
+    mode = models.CharField(
         verbose_name="Receive Mode",
         choices=MODE,
         default=CASH,
         max_length=1024,
     )
-    receive_amount_transfered = models.FloatField(
+    transfer = models.FloatField(
         verbose_name="Amount Transfered", default=0.00, blank=True
     )
     cash_rate = models.FloatField(verbose_name="Cash Rate", default=0.00)
     transfer_rate = models.FloatField(verbose_name="Transfer Rate", default=0.00,  blank=True)
+    selling_rate = models.FloatField(verbose_name="Selling Rate", default=0.00,  blank=True)
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, default=datetime.now
     )
     last_updated = models.DateTimeField(
         verbose_name="Date Last Updated", auto_now=True)
-    
-class Giving(models.Model):
-    transaction = models.ForeignKey(Transaction, related_name='giving', on_delete=models.CASCADE)
-    
-    give_bank_name = models.CharField(
-        verbose_name="Bank Name", max_length=1024, blank=True)
-    give_account_name = models.CharField(
-        verbose_name="Account Name", max_length=1024, blank=True)
-    give_mode = models.CharField(
-        verbose_name="Give Mode",
-        choices=MODE,
-        default=CASH,
-        max_length=1024,
-    )
-    currency_given = models.CharField(
-        verbose_name="Currency Recieved",
-        choices=CURRENCIES,
-        default=DOLLAR,
-        max_length=1024,
-    )
-    cash_given = models.FloatField(verbose_name="Cash given", default=0.00)
-    give_amount_transfered = models.FloatField(
-        verbose_name="Amount Transfered", default=0.00, blank=True
-    )
-    selling_rate = models.FloatField(verbose_name="Selling Rate", default=0.00,  blank=True)
-    date_created = models.DateField(
-        verbose_name="Date Added", auto_now=False,default=datetime.now
-    )
-    last_updated = models.DateTimeField(
-        verbose_name="Date Last Updated", auto_now=True)
-
-
     
 class CustomerLedger(models.Model):
     customer = models.CharField(

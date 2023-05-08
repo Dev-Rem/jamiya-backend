@@ -374,16 +374,15 @@ class TransactionViewSet(viewsets.ModelViewSet):
             # Check if transaction is a sales transaction
         if request.data['category'] == PURCHASE:
             data = request.data
-            receiving = data.pop('receiving')
-            giving = data.pop('giving')
+            receive_give = data.pop('receive_give')
+            beneficiaries = data.pop('beneficiaries')
             
             serializer = self.serializer_class(data=data, context={'request': request})
             if serializer.is_valid(raise_exception=True):
                 instance = serializer.save()
-                create_receiving_and_giving(receiving=receiving, giving=giving, transaction=instance)
+                create_beneficiary_receiving_and_giving(receive_give=receive_give, transaction=instance, benficiaries=beneficiaries)
                 transaction_handler = TransactionHandler(instance)
-                transaction_handler.handle_receiving()
-                transaction_handler.handle_giving()
+                transaction_handler.handle_receive_give()
                 data = calculation_for_general_ledger()
                 data.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -393,16 +392,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
             data = request.data
             receiving = data.pop('receiving')
             giving = data.pop('giving')
+            beneficiaries = data.pop('beneficiaries')
             
             serializer = self.serializer_class(data=data, context={'request': request})
             profit = get_profit_for_sales(data=giving)
             serializer.initial_data['profit'] = profit
             if serializer.is_valid(raise_exception=True):
                 instance = serializer.save()
-                create_receiving_and_giving(receiving=receiving, giving=giving, transaction=instance)
+                create_beneficiary_receiving_and_giving(receiving=receiving, giving=giving, beneficiaries=beneficiaries, transaction=instance)
                 transaction_handler = TransactionHandler(instance)
-                transaction_handler.handle_receiving()
-                transaction_handler.handle_giving()
+                transaction_handler.handle_receive_give()
                 data = calculation_for_general_ledger()
                 data.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -414,10 +413,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
             transaction_handler = TransactionHandler(instance=instance)
             transaction_handler.reverse_transaction()
             
-            create_receiving_and_giving(receiving=request.data['receiving'], giving=request.data['giving'], transaction=instance)
+            create_beneficiary_receiving_and_giving(receiving=request.data['receive_give'], transaction=instance)
             
-            transaction_handler.handle_receiving()
-            transaction_handler.handle_giving()
+            transaction_handler.handle_receive_give()
             data = calculation_for_general_ledger()
             data.save()
             

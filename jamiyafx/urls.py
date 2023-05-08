@@ -15,7 +15,6 @@ router.register(r"transactions", TransactionViewSet)
 router.register(r"rates", RateViewSet)
 router.register(r"customerledgers", CustomerLedgerViewSet)
 router.register(r'generalledger', GeneralLedgerViewSet)
-router.register(r'receiving', ReceivingViewSet)
-router.register(r'giving', GivingViewSet)
+router.register(r'receiving', ReceiveGiveViewSet)
 
 urlpatterns = router.urls
