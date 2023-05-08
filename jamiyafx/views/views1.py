@@ -30,15 +30,9 @@ class MoneyInViewSet(viewsets.ModelViewSet):
     serializer_class = MoneyInSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # # # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -71,15 +65,9 @@ class MoneyOutViewSet(viewsets.ModelViewSet):
     serializer_class = MoneyOutSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -112,15 +100,9 @@ class RateViewSet(viewsets.ModelViewSet):
     serializer_class = RateSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -145,10 +127,6 @@ class RateViewSet(viewsets.ModelViewSet):
             data.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # cache requests to this function
-    # this function is to get all the rates for the day
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     @action(detail=False)
     def today_rates(self, request):
         # get rates for the day
@@ -168,15 +146,9 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerLedgerSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    # @method_decorator(vary_on_cookie)
-    # @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -232,15 +204,9 @@ class GeneralLedgerViewSet(viewsets.ModelViewSet):
     serializer_class = GeneralLedgerSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @ method_decorator(vary_on_cookie)
-    @ method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve request
-    # @ method_decorator(vary_on_cookie)
-    # @ method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -288,15 +254,9 @@ class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @ method_decorator(vary_on_cookie)
-    @ method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve request
-    @ method_decorator(vary_on_cookie)
-    @ method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -356,15 +316,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list request
-    @ method_decorator(vary_on_cookie)
-    @ method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    @ method_decorator(vary_on_cookie)
-    @ method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -446,9 +400,6 @@ class ReportViewSet(viewsets.ModelViewSet):
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @ method_decorator(vary_on_cookie)
-    @ method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 

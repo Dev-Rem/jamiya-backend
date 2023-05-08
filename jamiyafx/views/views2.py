@@ -12,7 +12,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-CACHE_TTL = int(config("CACHE_TTL"))
 
 # Employee Model Views
 
@@ -22,15 +21,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -51,15 +44,9 @@ class OpeningBalanceViewSet(viewsets.ModelViewSet):
     serializer_class = OpeningBalanceSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -69,15 +56,9 @@ class ClosingBalanceViewSet(viewsets.ModelViewSet):
     serializer_class = ClosingBalanceSerializer
     permission_classes = [IsAuthenticated]
 
-    # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -88,16 +69,24 @@ class ReceiveGiveViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     
-    # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+
+class BeneficiaryViewSet(viewsets.ModelViewSet):
+    queryset = Beneficiary.objects.all()
+    serializer_class = BeneficiarySerializer()
+    permission_classes = [IsAuthenticated]
+    
+    
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
     
     
+
