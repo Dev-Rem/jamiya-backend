@@ -6,10 +6,14 @@ import django.contrib.auth.password_validation as validators
 
 # Register serializer
 class RegisterSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
-        fields = ("id", "username", "password", "first_name", "last_name", "email")
+        fields = ("id", "username", "password", "first_name",
+                  "last_name", "email")
         extra_kwargs = {
+            "username": {'required': True}, "password": {'required': True}, "first_name": {'required': True},
+            "email": {'required': True}, 'confirm_password'
             "password": {"write_only": True},
         }
 
@@ -107,4 +111,4 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "username", "first_name", "last_name", "email")
+        fields = "__all__"

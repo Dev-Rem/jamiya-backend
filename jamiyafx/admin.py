@@ -7,7 +7,7 @@ from jamiyafx.models.models2 import *
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ("bank_name", "account_name", "naira", "dollar", "pound", "euro")
+    list_display = ("bank_name", "account_name")
 
 
 @admin.register(Employee)
@@ -17,40 +17,45 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ("station", "naira", "dollar", "pound", "euro")
+    list_display = ("station",  'date_created')
 
 
 @admin.register(MoneyIn)
 class MoneyInAdmin(admin.ModelAdmin):
-    list_display = ("report", "naira", "dollar", "pound", "euro", "date_created")
+    list_display = ("report", "currencies",  "date_created")
 
 
 @admin.register(MoneyOut)
 class MoneyOutAdmin(admin.ModelAdmin):
-    list_display = ("report", "naira", "dollar", "pound", "euro", "date_created")
+    list_display = ("report", "currencies", "date_created")
 
 
 @admin.register(OpeningBalance)
 class OpeningBalanceAdmin(admin.ModelAdmin):
-    list_display = ("report", "naira", "dollar", "pound", "euro", "date_created")
+    list_display = ("report", "currencies", "date_created")
 
 
 @admin.register(ClosingBalance)
 class ClosingBalanceAdmin(admin.ModelAdmin):
-    list_display = ("report", "naira", "dollar", "pound", "euro", "date_created")
+    list_display = ("report", "currencies", "date_created")
 
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = (
         "customer_name1",
-        "account_number1",
-        "bank_name1",
-        "cash_given",
-        "amount_transfered",
+        "receipt_number",
         "initiator",
     )
 
+@admin.register(Receiving)
+class ReceivingAdmin(admin.ModelAdmin):
+    list_display=( 'currency_received', 'receive_mode')
+    
+@admin.register(Giving)
+class GivingAdmin(admin.ModelAdmin):
+    list_display=( 'currency_given', 'give_mode')
+    
 
 @admin.register(Rate)
 class RateAdmin(admin.ModelAdmin):
@@ -59,14 +64,20 @@ class RateAdmin(admin.ModelAdmin):
 
 @admin.register(CustomerLedger)
 class CustomerLedgerAdmin(admin.ModelAdmin):
-    list_display = ("customer", "naira", "dollar", "pound", "euro", "status")
+    list_display = ("customer", "currencies", "status")
 
 
 @admin.register(GeneralLedger)
 class GeneralLedgerAdmin(admin.ModelAdmin):
-    list_display = ("naira", "dollar", "pound", "euro", "calculated_profit", "variance")
+    list_display = (
+        "calculated_profit", "variance", "currencies", "date_created")
 
 
 @admin.register(Receipt)
 class ReceiptAdmin(admin.ModelAdmin):
     list_display = ("customer_name", "phone_number", "receipt")
+
+
+@admin.register(Currency)
+class CurrencyAdmin(admin.ModelAdmin):
+    list_display = ('naira', "dollar", "pound", "euro", "date_created")

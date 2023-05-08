@@ -80,3 +80,41 @@ class ClosingBalanceViewSet(viewsets.ModelViewSet):
     @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
+
+
+class ReceivingViewSet(viewsets.ModelViewSet):
+    queryset = Receiving.objects.all()
+    serializer_class = ReceivingSerializer
+    permission_classes = [IsAuthenticated]
+    
+    
+    # cache all list requests
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(CACHE_TTL))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    # cache all retrieve requests
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(CACHE_TTL))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    
+class GivingViewSet(viewsets.ModelViewSet):
+    queryset = Giving.objects.all()
+    serializer_class = GivingSerializer
+    permission_classes = [IsAuthenticated]
+    
+    # cache all list requests
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(CACHE_TTL))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    # cache all retrieve requests
+    @method_decorator(vary_on_cookie)
+    @method_decorator(cache_page(CACHE_TTL))
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+

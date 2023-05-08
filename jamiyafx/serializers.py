@@ -7,67 +7,156 @@ from jamiyafx.models.models2 import *
 # serializers for all models
 
 
-class AccountSerializer(serializers.HyperlinkedModelSerializer):
+class CurrrencySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Account
+        model = Currency
         fields = "__all__"
 
 
-class EmployeeSerializer(serializers.HyperlinkedModelSerializer):
+class AccountSerializer(serializers.ModelSerializer):
+    currencies = CurrrencySerializer()
+
+    class Meta:
+        model = Account
+        fields = ['id', 'bank_name', 'account_name',
+                  'currencies', 'date_created']
+
+    def create(self, validated_data):
+        currencies = Currency.objects.create(**validated_data['currencies'])
+        del validated_data['currencies']
+        account = Account.objects.create(
+            currencies=currencies, **validated_data)
+        currencies.save()
+
+        return account
+
+
+class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = "__all__"
 
 
-class ReportSerializer(serializers.HyperlinkedModelSerializer):
+class ReportSerializer(serializers.ModelSerializer):
+    currencies = CurrrencySerializer()
+
     class Meta:
         model = Report
-        fields = "__all__"
+        fields = ['id', 'currencies', 'description',
+                  'station', 'profit', 'date_created']
+
+    def create(self, validated_data):
+        currencies = Currency.objects.create(**validated_data['currencies'])
+        del validated_data['currencies']
+        report = Report.objects.create(
+            currencies=currencies, **validated_data)
+        currencies.save()
+
+        return report
 
 
 class MoneyInSerializer(serializers.ModelSerializer):
+    currencies = CurrrencySerializer()
+
     class Meta:
         model = MoneyIn
-        fields = "__all__"
+        fields = ['id', "report", 'currencies', 'date_created']
 
 
-class MoneyOutSerializer(serializers.HyperlinkedModelSerializer):
+class MoneyOutSerializer(serializers.ModelSerializer):
+    currencies = CurrrencySerializer()
+
     class Meta:
         model = MoneyOut
-        fields = "__all__"
+        fields = ['id', "report", 'currencies', 'date_created']
 
 
-class OpeningBalanceSerializer(serializers.HyperlinkedModelSerializer):
+class OpeningBalanceSerializer(serializers.ModelSerializer):
+    currencies = CurrrencySerializer()
+
     class Meta:
         model = OpeningBalance
-        fields = "__all__"
+        fields = ['id', "report", 'currencies', 'date_created']
 
 
-class ClosingBalanceSerializer(serializers.HyperlinkedModelSerializer):
+class ClosingBalanceSerializer(serializers.ModelSerializer):
+    currencies = CurrrencySerializer()
+
     class Meta:
         model = ClosingBalance
+        fields = ['id', "report", 'currencies', 'date_created']
+
+class ReceivingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Receiving
         fields = "__all__"
 
+class GivingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Giving
+        fields = "__all__"
 
-class TransactionSerializer(serializers.HyperlinkedModelSerializer):
+class TransactionSerializer(serializers.ModelSerializer):
+    receiving = ReceivingSerializer(many=True, read_only=True)
+    giving = GivingSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Transaction
-        fields = "__all__"
+        fields = ["id",
+            "customer_name1",
+            "account_number1",
+            "bank_name1",
+            "customer_name2",
+            "account_number2",
+            "bank_name2",
+            "phone_number",
+            "address",
+            "description",
+            "initiator",
+            "status",
+            "category",
+            "profit",
+            "receipt_number",
+            "date_created",
+            "last_updated", 'receiving', 'giving']
+        
+        
 
 
-class RateSerializer(serializers.HyperlinkedModelSerializer):
+class RateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rate
         fields = "__all__"
 
+class CustomerLedgerSerializer(serializers.ModelSerializer):
+    currencies = CurrrencySerializer()
 
-class CustomerLedgerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = CustomerLedger
-        fields = "__all__"
+        fields = ['id', "customer", 'description',
+                  'status', 'currencies', 'date_created']
 
+    def create(self, validated_data):
+        currencies = Currency.objects.create(**validated_data['currencies'])
+        del validated_data['currencies']
+        obj = CustomerLedger.objects.create(
+            currencies=currencies, **validated_data)
+        currencies.save()
+        return obj
 
 class GeneralLedgerSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = GeneralLedger
-        fields = "__all__"
+        fields = [
+            "currencies",
+            "currency_total",
+            "grand_total",
+            "previous_total",
+            "difference",
+            "expense",
+            "book_profit",
+            "calculated_profit",
+            "variance",
+            'date_created'
+        ]

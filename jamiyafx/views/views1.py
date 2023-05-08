@@ -1,13 +1,12 @@
-import datetime
+import json
+from datetime import datetime, timedelta
 
 from jamiyafx.models.models1 import *
 from jamiyafx.models.models2 import *
 from jamiyafx.serializers import *
-from jamiyafx.utils import (
-    update_closing_bal,
-    calculation_for_general_ledger,
-    get_customerledger_total,
-)
+from jamiyafx.utils import *
+from jamiyafx.transactionHandler import TransactionHandler
+
 from jamiyafx.models.variables import SALES
 
 from decouple import config
@@ -37,7 +36,7 @@ class MoneyInViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    # # cache all retrieve requests
+    # # # cache all retrieve requests
     @method_decorator(vary_on_cookie)
     @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
@@ -45,20 +44,21 @@ class MoneyInViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         # get the report which the money in object is attached to.
-        instance = self.queryset.get(pk=kwargs.get("pk"))
-        report = Report.objects.get(pk=instance.report.pk)
+        report = Report.objects.get(pk=kwargs.get("pk"))
+        instance = self.queryset.get(report=report)
 
         # update the report
         for i in request.data.keys():
-            report.__dict__[i] += request.data[i]
-            request.data[i] += instance.__dict__[i]
-            report.save()
-        serializer = self.serializer_class(
-            instance, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            report.currencies.__dict__[i] += request.data[i]
+            request.data[i] += instance.currencies.__dict__[i]
+            report.currencies.save()
+        currency_serializer = CurrrencySerializer(
+            instance.currencies, data=request.data, partial=True, context={'request': request})
+        serializer = self.serializer_class(instance)
+        if currency_serializer.is_valid(raise_exception=True):
+            currency_serializer.save()
             # update report closing balance
-            update_closing_bal(report=report)
+            update_closing_and_account_bal(report=report)
             # run the calculation for the general ledger because of update to report
             data = calculation_for_general_ledger()
             data.save()
@@ -84,20 +84,22 @@ class MoneyOutViewSet(viewsets.ModelViewSet):
         return super().retrieve(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        instance = self.queryset.get(pk=kwargs.get("pk"))
-        report = Report.objects.get(pk=instance.report.pk)
-
+        report = Report.objects.get(pk=kwargs.get("pk"))
+        instance = self.queryset.get(report=report)
+        print(request.data)
         # update the report
         for i in request.data.keys():
-            report.__dict__[i] -= request.data[i]
-            request.data[i] += instance.__dict__[i]
-            report.save()
-        serializer = self.serializer_class(
-            instance, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            report.currencies.__dict__[i] -= request.data[i]
+            request.data[i] += instance.currencies.__dict__[i]
+            report.currencies.save()
+        print(request.data)
+        currency_serializer = CurrrencySerializer(
+            instance.currencies, data=request.data, partial=True, context={'request': request})
+        serializer = self.serializer_class(instance)
+        if currency_serializer.is_valid(raise_exception=True):
+            currency_serializer.save()
             # update report closing balance
-            update_closing_bal(report=report)
+            update_closing_and_account_bal(report=report)
             # run the calculation for the general ledger because of update to report
             data = calculation_for_general_ledger()
             data.save()
@@ -131,9 +133,9 @@ class RateViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     # update individual rates
-    def partial_update(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         # get the instance to be updated
-        instance = self.queryset.get(pk=kwargs.get("pk"))
+        instance = Rate.objects.get(currency=request.data['currency'])
         serializer = self.serializer_class(
             instance, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid(raise_exception=True):
@@ -167,14 +169,14 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     # cache all list requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
+    # @method_decorator(vary_on_cookie)
+    # @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     # cache all retrieve requests
-    @method_decorator(vary_on_cookie)
-    @method_decorator(cache_page(CACHE_TTL))
+    # @method_decorator(vary_on_cookie)
+    # @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
@@ -185,8 +187,8 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             # calculate general ledger because of customer ledger change
-            # data = calculation_for_general_ledger()
-            # data.save()
+            data = calculation_for_general_ledger()
+            data.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(
             status=status.HTTP_400_BAD_REQUEST
@@ -197,15 +199,14 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
         # get instance for update
         instance = self.queryset.get(pk=kwargs.get("pk"))
         # perform update
-        for i in request.data.keys():
-            request.data[i] += instance.__dict__[i]
-        serializer = self.serializer_class(
-            instance, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+        currency_serializer = CurrrencySerializer(
+            instance=instance.currencies, data=request.data)
+        serializer = self.serializer_class()
+        if currency_serializer.is_valid(raise_exception=True):
+            currency_serializer.save()
             # calculate general ledger because of customer ledger change
-            # data = calculation_for_general_ledger()
-            # data.save()
+            data = calculation_for_general_ledger()
+            data.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     # delete a customer ledger
@@ -213,6 +214,7 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
         # try to delete instance if it exist and throw exception if it doesn't
         try:
             instance = self.queryset.get(pk=kwargs.get("pk"))
+            instance.currencies.delete()
             self.perform_destroy(instance)
             # calculate general ledger because of customer ledger change
             data = calculation_for_general_ledger()
@@ -222,11 +224,6 @@ class CustomerLedgerViewSet(viewsets.ModelViewSet):
             )
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    # this is a function to get the currency totals of all customer ledgers
-    @ action(detail=False)
-    def ledger_totals(self, request):
-        return Response(get_customerledger_total())
 
 
 # GeneralLedger Model Views
@@ -242,27 +239,30 @@ class GeneralLedgerViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     # cache all retrieve request
-    @ method_decorator(vary_on_cookie)
-    @ method_decorator(cache_page(CACHE_TTL))
+    # @ method_decorator(vary_on_cookie)
+    # @ method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
     # create new general ledger report
     def create(self, request, *args, **kwargs):
         # get instance of the last general ledger object created
-        instance = GeneralLedger.objects.last()
+        instance = GeneralLedger.objects.order_by('-date_created').first()
+        serializer = GeneralLedgerSerializer(instance)
         # check if instance exists or if the last instance was created on present day
-        if (instance == None) or (datetime.date.today() != instance.date_created):
+        if (instance == None) and (datetime.today() != instance.date_created):
             # send data for calculationa and then serialize the results
             data = calculation_for_general_ledger(data=request.data)
             serializer = self.serializer_class(
                 data=data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-            return Response(data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = calculation_for_general_ledger()
+        data.save()
         return Response(
-            {"status": "Already created report for today"},
-            status=status.HTTP_400_BAD_REQUEST,
+            serializer.data,
+            status=status.HTTP_200_OK,
         )
 
     # partial update of a general ledger instance
@@ -300,15 +300,33 @@ class AccountViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
+    def create(self, request, *args, **kwargs):
+        if Account.objects.filter(bank_name=request.data['bank_name'], account_name=request.data['account_name']).exists():
+            return Response({'message': 'Account already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Currency.objects.create(
+                **request.data['currencies'])
+            serializer = self.serializer_class(
+                data=request.data, context={'request': request})
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                data = calculation_for_general_ledger()
+                data.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'message': "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+
     # partial update to an account instance
+
     def partial_update(self, request, *args, **kwargs):
         # get instance to be updated
         instance = self.queryset.get(pk=kwargs.get("pk"))
-        serializer = self.serializer_class(
-            instance, data=request.data, partial=True, context={'request': request}
+
+        currency_serializer = CurrrencySerializer(
+            instance.currencies, data=request.data, partial=True, context={'request': request}
         )
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+        serializer = self.serializer_class(instance)
+        if currency_serializer.is_valid(raise_exception=True):
+            currency_serializer.save()
             # calculate general ledger because of changes to the instance
             data = calculation_for_general_ledger()
             data.save()
@@ -320,6 +338,9 @@ class AccountViewSet(viewsets.ModelViewSet):
         try:
             # get instance to be deleted
             instance = self.queryset.get(pk=kwargs.get("pk"))
+            currencies = Currency.objects.get(id=instance.currencies.id)
+
+            currencies.delete()
             self.perform_destroy(instance)
             # calculate general ledger because of deleted account
             data = calculation_for_general_ledger()
@@ -347,40 +368,80 @@ class TransactionViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
+    
     # create a new transaction
     def create(self, request, *args, **kwargs):
-        # Get the recent buying rate
-        buying_rate = Rate.objects.get(
-            date_created=datetime.date.today(),
-            currency=request.data["currency_given"],
-        ).buying
+            # Check if transaction is a sales transaction
+        if request.data['category'] == PURCHASE:
+            data = request.data
+            receiving = data.pop('receiving')
+            giving = data.pop('giving')
+            
+            serializer = self.serializer_class(data=data, context={'request': request})
+            if serializer.is_valid(raise_exception=True):
+                instance = serializer.save()
+                create_receiving_and_giving(receiving=receiving, giving=giving, transaction=instance)
+                transaction_handler = TransactionHandler(instance)
+                transaction_handler.handle_receiving()
+                transaction_handler.handle_giving()
+                data = calculation_for_general_ledger()
+                data.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        elif request.data['category'] == (SALES or CROSS_CURRENCY):
+        
+            data = request.data
+            receiving = data.pop('receiving')
+            giving = data.pop('giving')
+            
+            serializer = self.serializer_class(data=data, context={'request': request})
+            profit = get_profit_for_sales(data=giving)
+            serializer.initial_data['profit'] = profit
+            if serializer.is_valid(raise_exception=True):
+                instance = serializer.save()
+                create_receiving_and_giving(receiving=receiving, giving=giving, transaction=instance)
+                transaction_handler = TransactionHandler(instance)
+                transaction_handler.handle_receiving()
+                transaction_handler.handle_giving()
+                data = calculation_for_general_ledger()
+                data.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if multiple transactions were posted
-        if (type(request.data) is list):
-            serializer = self.serializer_class(
-                data=request.data, many=True, context={'request': request})
+    def partial_update(self, request, *args, **kwargs):
+            instance = self.queryset.get(pk=kwargs.get("pk"))
+            
+            transaction_handler = TransactionHandler(instance=instance)
+            transaction_handler.reverse_transaction()
+            
+            create_receiving_and_giving(receiving=request.data['receiving'], giving=request.data['giving'], transaction=instance)
+            
+            transaction_handler.handle_receiving()
+            transaction_handler.handle_giving()
+            data = calculation_for_general_ledger()
+            data.save()
+            
+            serializer = self.serializer_class(instance=instance, data=request.data, partial=True, context={'request': request})
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # Check if transaction is a sales transaction
-        elif request.data['categories'] == SALES:
-            # calculate sales profit of the transaction
-            request.data["profit"] = (
-                request.data["rate"] - buying_rate) * request.data['amount_recieved']
-            serializer = self.serializer_class(
-                data=request.data, context={'request': request})
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # else if it is a normal purchase transaction
-        else:
-            serializer = self.serializer_class(
-                data=request.data, context={'request': request})
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.queryset.get(pk=kwargs.get("pk"))
+            
+            transaction_handler = TransactionHandler(instance=instance)
+            transaction_handler.reverse_transaction()
+            
+            self.perform_destroy(instance)
+            # calculate general ledger because of deleted account
+            data = calculation_for_general_ledger()
+            data.save()
+            return Response({"status": "Delete Successful"}, status=status.HTTP_204_NO_CONTENT)
+        except Exception:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+        
 # Report Model views
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = Report.objects.all()
@@ -396,23 +457,27 @@ class ReportViewSet(viewsets.ModelViewSet):
     # create new report
     def create(self, request, *args, **kwargs):
         # get instance of the last report created by the work station
-        instance = Report.objects.get(station=request.data['station'])
+        instance = Report.objects.filter(
+            station=request.data['station']).order_by('-date_created').first()
+        print(instance.date_created)
+        serializer = ReportSerializer(instance)
         # check if instance exists or if the report was created on present day
-        if (instance == None) or (datetime.date.today() != instance.date_created):
-            serializer = self.serializer_class(data=request.data)
+        if (instance == None) and (datetime.today() != instance.date_created):
+            serializer = self.serializer_class(
+                data=request.data, context={'request': request})
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-            return Response(request.data, status=status.HTTP_201_CREATED)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(
-            {"status": "Already created report for today"},
-            status=status.HTTP_400_BAD_REQUEST,
+            serializer.data,
+            status=status.HTTP_200_OK,
         )
 
     # this function is to return all the variablesa and their values that make up a complete report
     # @method_decorator(vary_on_cookie)
     # @method_decorator(cache_page(CACHE_TTL))
     def retrieve(self, request, *args, **kwargs):
-        print("using this view")
         instance = self.queryset.get(pk=kwargs.get("pk"))
         report_serializer = ReportSerializer(
             instance, context={"request": request})
@@ -444,3 +509,5 @@ class ReportViewSet(viewsets.ModelViewSet):
             "closing_balance": closing_bal_serializer.data,
         }
         return Response(data, status=status.HTTP_200_OK)
+    
+
