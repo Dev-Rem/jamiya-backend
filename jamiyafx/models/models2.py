@@ -37,9 +37,8 @@ class ClosingBalance(models.Model):
 
 
 class Transaction(models.Model):
-    beneficiaries = models.CharField(verbose_name='Beneficiaries', choices=BENEFICIARIES, default=SINGLE_PAYMENT,max_length=1024)
-    phone_number = models.CharField(verbose_name="Phone Number", max_length=15)
-    address = models.TextField(verbose_name="Address", max_length=1024)
+    payment_status = models.CharField(verbose_name='Beneficiaries', choices=BENEFICIARIES, default=SINGLE_PAYMENT,max_length=1024)
+    phone_number = models.CharField(verbose_name="Phone Number", max_length=15, null=True)
     description = models.TextField(verbose_name="Description", max_length=1024)
     initiator = models.CharField(
         verbose_name="Station",
@@ -75,16 +74,18 @@ class Transaction(models.Model):
         ordering = ["-date_created"]
 
 class Beneficiary(models.Model):
-    transaction = models.ForeignKey(Transaction, related_name='beneficiary', on_delete=models.CASCADE, null=True)
+    transaction = models.ForeignKey(Transaction, related_name='beneficiaries', on_delete=models.CASCADE, null=True)
     customer_account_name = models.CharField(
-        verbose_name="Customer Account Name ", max_length=1024)
+        verbose_name="Customer Account Name ", max_length=1024, null=True, blank=True)
     customer_account_number = models.CharField(
-        verbose_name="Customer Account Number ", max_length=10, blank=True)
+        verbose_name="Customer Account Number ", max_length=10, blank=True, null=True,)
     customer_bank_name = models.CharField(
-        verbose_name="Customer Bank Name", max_length=100, blank=True)
-    transfer = models.FloatField(
-        verbose_name="Amount Transfered", default=0.00, blank=True
+        verbose_name="Customer Bank Name", max_length=100, blank=True, null=True,)
+    amount = models.FloatField(
+        verbose_name="Amount Transfered", default=0.00, blank=True, null=True,
     )
+    
+
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, default=datetime.now
     )

@@ -49,7 +49,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_display =('transaction', 'customer_account_name', 'customer_account_number', 'customer_bank_name')
+    list_display =('transaction', 'customer_account_name', 'customer_account_number', 'customer_bank_name', 'amount',)
     
 @admin.register(ReceiveGive)
 class ReceiveGiveAdmin(admin.ModelAdmin):

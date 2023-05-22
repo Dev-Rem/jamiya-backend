@@ -106,11 +106,11 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = ["id",
             "phone_number",
-            "address",
             "description",
             "initiator",
             "status",
             "category",
+            "payment_status",
             "profit",
             "receipt_number",
             "date_created",

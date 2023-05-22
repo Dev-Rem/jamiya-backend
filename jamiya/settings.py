@@ -60,6 +60,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.cache.FetchFromCacheMiddleware",
     "django.middleware.cache.UpdateCacheMiddleware",
+    "jamiyafx.middleware.CacheControlMiddleware",
 ]
 
 ROOT_URLCONF = config("ROOT_URLCONF")
@@ -142,10 +143,10 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        hours=int(config("SIMPLE_JWT_ACCESS_TOKEN_LIFETIME"))
+        days=int(config("SIMPLE_JWT_ACCESS_TOKEN_LIFETIME"))
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
-        hours=int(config("SIMPLE_JWT_REFRESH_TOKEN_LIFETIME"))
+        days=int(config("SIMPLE_JWT_REFRESH_TOKEN_LIFETIME"))
     ),
     "SIGNING_KEY": config("SECRET_KEY"),
     "ROTATE_REFRESH_TOKENS": True,
@@ -158,15 +159,15 @@ ADMINS = [
 ]
 MANAGERS = ADMINS
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://redis:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         },
+#     }
+# }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
@@ -190,3 +191,24 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+CORS_ALLOW_METHODS = (
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+     "cache-control"
+)

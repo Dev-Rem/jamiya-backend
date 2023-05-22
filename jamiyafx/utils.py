@@ -8,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
-
+from datetime import date
 class Dotdict(dict):
     """dot.notation access to dictionary attributes"""
 
@@ -84,7 +84,7 @@ def calculation_for_general_ledger(data=None):
 
     # check if data is parsed or not
     if data is None:
-        data = GeneralLedger.objects.get(date_created=datetime.today())
+        data = GeneralLedger.objects.get(date_created=date.today())
         general_ledger_currencies = Currency.objects.get(id=data.currencies.id)
 
     else:
@@ -131,7 +131,7 @@ def calculation_for_general_ledger(data=None):
     try:
         queryset = GeneralLedger.objects.order_by(
             '-date_created')
-        if queryset[0].date_created == datetime.today():
+        if queryset[0].date_created == date.today():
             previous_grand_total = queryset[1].grand_total
         else:
             previous_grand_total = queryset[0].grand_total
@@ -141,7 +141,7 @@ def calculation_for_general_ledger(data=None):
 
     # get the total sum of all profit calculated from reports created at present day
     calculated_profit = Report.objects.filter(
-        date_created=datetime.today()
+        date_created=date.today()
     ).aggregate(Sum("profit"))["profit__sum"]
 
     # assign previous total
@@ -160,26 +160,83 @@ def calculation_for_general_ledger(data=None):
 
 
 
-def create_beneficiary_receiving_and_giving(receive_give,transaction, benficiaries = None):
-    
+def create_beneficiary_receiving_and_giving(receive_give,transaction, beneficiaries = None):
+    print(transaction)
     for i in receive_give:
+        try:
+            i.pop('transaction')
+        except:
+            pass
         obj = ReceiveGive.objects.create(transaction=transaction, **i)
         obj.save()
-    
-    if benficiaries != None:
-        for k in benficiaries:
-            beneficiary = Beneficiary.objects.create(transaction=transaction, **k)
+    if beneficiaries == None:
+        pass
+    else:
+        for j in beneficiaries:
+            beneficiary = Beneficiary.objects.create(transaction=transaction, **j)
             beneficiary.save()
 
-def get_profit_for_sales(data):
-    profit = 0
-    for i in data:
-        rate = Rate.objects.get(currency=i['currency']).buying
+def calc_profit_for_cross_currency(receive_give):
+    profit=0
+    receive_total = 0
+    give_total = 0
+    # iterate through receive_give list
+    for i in receive_give:
         
-        profit += (i["selling_rate"] - rate) * (i['cash_given']+i['give_amount_transfered'])
-
+        if i['status'] == RECEIVING:
+            # multiply cash by cash rate and transfer by transfer rate
+            # then add to receive total so we can keep track of customer balance
+            if i['cash_rate' ]> 0 and i['cash']>0:
+                cash = i['cash'] * i['cash_rate']
+            if i['transfer_rate' ]> 0 and i['transfer']>0:
+                transfer = i['transfer'] * i['transfer_rate']
+            receive_total += cash + transfer
+            
+        if i['status'] == GIVING:
+            # get account ledger buying rate based on currency
+            rate = Rate.objects.get(currency=i['currency']).buying
+            
+            if i['cash_rate' ]> 0 and i['cash']>0:
+                profit += (i["cash_rate"] - rate) * (i['cash'])
+                cash = i['cash'] * i['cash_rate']
+            if i['transfer_rate' ]> 0 and i['transfer']>0:
+                profit += (i["transfer_rate"] - rate) * (i['transfer'])
+                transfer = i['transfer'] * i['transfer_rate']
+            give_total += cash + transfer
+            
+    return profit
+    
+def calc_profit_for_sales(receive_give):
+    profit = 0
+    for i in receive_give:
+        if i['status'] == GIVING:
+            # get account ledger buying rate based on currency
+            rate = Rate.objects.get(currency=i['currency']).buying
+            
+            if i['cash_rate' ]> 0 and i['cash']>0:
+                profit += (i["cash_rate"] - rate) * i['cash']
+            if i['transfer_rate' ]> 0 and i['transfer']>0:
+                profit += (i["transfer_rate"] - rate) * (i['transfer'])
+                
     return profit
 
 
-def transaction_calculation():
-    pass
+def calc_for_purchase(receive_give):
+    
+    receive_total = 0
+    give_total = 0
+    for i in receive_give:
+        if i['status'] == RECEIVING:
+            if i['cash_rate' ]> 0 and i['cash']>0:
+                cash = i['cash'] * i['cash_rate']
+            if i['transfer_rate' ]> 0 and i['transfer']>0:
+                transfer = i['transfer'] * i['transfer_rate']
+            receive_total += cash + transfer
+        if i['status'] == GIVING:
+            if i['cash_rate' ]> 0 and i['cash']>0:
+                cash = i['cash'] * i['cash_rate']
+            if i['transfer_rate' ]> 0 and i['transfer']>0:
+                transfer = i['transfer'] * i['transfer_rate']
+            give_total += cash + transfer
+
+    return receive_total==give_total

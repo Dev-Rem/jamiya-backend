@@ -6,9 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from jamiyafx.models.models1 import *
 from jamiyafx.models.models2 import *
 from jamiyafx.utils import (
-    calculation_for_general_ledger,
     update_closing_and_account_bal)
-from jamiyafx.transactionHandler import TransactionHandler
 
 
 @receiver(post_save, sender=Report)
