@@ -212,3 +212,4 @@ CORS_ALLOW_HEADERS = (
     "x-requested-with",
      "cache-control"
 )
+AUTH_USER_MODEL = 'user.CustomUser'

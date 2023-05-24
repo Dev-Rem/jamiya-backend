@@ -8,7 +8,7 @@ from rest_framework_simplejwt.token_blacklist.models import (
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from decouple import config
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
@@ -20,14 +20,14 @@ from .serializers import (
     UpdateUserSerializer,
     UserDetailSerializer,
 )
-
+from .models import CustomUser
 
 # Create your views here.
 CACHE_TTL = int(config("CACHE_TTL"))
 
 
 class UserDetailView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserDetailSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -35,7 +35,7 @@ class UserDetailView(generics.RetrieveAPIView):
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, *args, **kwargs):
         try:
-            instance = User.objects.get(pk=request.user.id)
+            instance = CustomUser.objects.get(pk=request.user.id)
             serializer = UserDetailSerializer(instance)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except:
@@ -45,28 +45,23 @@ class UserDetailView(generics.RetrieveAPIView):
 
 
 class RegisterUserView(generics.GenericAPIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = RegisterSerializer
     authentication_classes = []
     permission_classes = []
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
         return Response(
-            {
-                "user": UserSerializer(
-                    user, context=self.get_serializer_context()
-                ).data,
-                "message": "User Created Successfully.  Now perform Login to get tokens",
-            },
-            status=status.HTTP_201_CREATED,
-        )
+                {"status": "User Info InComplete"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class LogoutUserView(generics.GenericAPIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [IsAuthenticated]
 
@@ -84,12 +79,12 @@ class LogoutUserView(generics.GenericAPIView):
 
 class ChangePasswordView(generics.UpdateAPIView):
 
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangeUserPasswordSerializer
 
 
 class UpdateUserview(generics.UpdateAPIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UpdateUserSerializer

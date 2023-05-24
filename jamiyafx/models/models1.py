@@ -63,7 +63,7 @@ class Employee(models.Model):
         verbose_name="Status", max_length=50, choices=EMPLOYEE_STATUS, default=ACTIVE
     )
     station = models.CharField(
-        verbose_name="Station", max_length=30, choices=EMPLOYEE_STATIONS, default=INTERN
+        verbose_name="Station", max_length=30, choices=EMPLOYEE_STATIONS
     )
     date_joined = models.DateTimeField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
@@ -83,7 +83,7 @@ class Report(models.Model):
         verbose_name="Station",
         max_length=30,
         choices=EMPLOYEE_STATIONS,
-        default=FRONTDESK,
+        default=FRONTDESK1,
     )
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True

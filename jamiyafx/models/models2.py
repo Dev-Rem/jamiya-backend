@@ -44,7 +44,7 @@ class Transaction(models.Model):
         verbose_name="Station",
         max_length=30,
         choices=EMPLOYEE_STATIONS,
-        default=FRONTDESK,
+        default=FRONTDESK1,
     )
     status = models.CharField(
         verbose_name="Tansaction Status",
