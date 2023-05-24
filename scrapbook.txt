@@ -92,3 +92,19 @@ class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = "__all__"
+
+
+
+
+    # @action(detail=False)
+    # def today_rates(self, request):
+    #     # get rates for the day
+    #     today_rates = Rate.objects.filter(date_created=date.today())
+    #     # check is they exists and return it
+    #     if today_rates:
+    #         serializer = self.get_serializer(
+    #             today_rates, many=True, context={"request": request}
+    #         )
+    #         return Response(serializer.data)
+    #     return Response({"status": "There are no rates for today"})
+

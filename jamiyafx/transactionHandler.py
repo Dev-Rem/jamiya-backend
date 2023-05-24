@@ -20,13 +20,13 @@ class TransactionHandler:
             
             if obj.status == RECEIVING:
             
-                # report balance
-                setattr(
-                    self.report.currencies,
-                    obj.currency.lower(),
-                    getattr(self.report.currencies, obj.currency.lower(), 0)
-                    + obj.cash,
-                )
+                # # report balance
+                # setattr(
+                #     self.report.currencies,
+                #     obj.currency.lower(),
+                #     getattr(self.report.currencies, obj.currency.lower(), 0)
+                #     + obj.cash,
+                # )
                 
                 # money in
                 setattr(
@@ -51,17 +51,17 @@ class TransactionHandler:
                     receiving_account.currencies.save()
                 except Account.DoesNotExist:
                     pass
-                self.report.currencies.save()
+                # self.report.currencies.save()
                 self.money_in.currencies.save()
                 update_closing_and_account_bal(report=self.report)
         
             elif obj.status == GIVING :
-                setattr(
-                self.report.currencies,
-                obj.currency.lower(),
-                getattr(self.report.currencies, obj.currency.lower(), 0)
-                - obj.cash,
-            )
+            #     setattr(
+            #     self.report.currencies,
+            #     obj.currency.lower(),
+            #     getattr(self.report.currencies, obj.currency.lower(), 0)
+            #     - obj.cash,
+            # )
             
                 # money out
                 setattr(
@@ -85,25 +85,24 @@ class TransactionHandler:
                     giving_account.currencies.save()
                 except Account.DoesNotExist:
                     pass
-                self.report.currencies.save()
+                # self.report.currencies.save()
                 self.money_out.currencies.save()
                 update_closing_and_account_bal(report=self.report)
                 
                 
                 
     def reverse_transaction(self):
-        print("reversed transaction successfully")
         for obj in self.receive_give:
             
             if obj.status == RECEIVING:
             
-                # report balance
-                setattr(
-                    self.report.currencies,
-                    obj.currency.lower(),
-                    getattr(self.report.currencies, obj.currency.lower(), 0)
-                    - obj.cash,
-                )
+                # # report balance
+                # setattr(
+                #     self.report.currencies,
+                #     obj.currency.lower(),
+                #     getattr(self.report.currencies, obj.currency.lower(), 0)
+                #     - obj.cash,
+                # )
                 
                 # money in
                 setattr(
@@ -128,25 +127,25 @@ class TransactionHandler:
                     receiving_account.currencies.save()
                 except Account.DoesNotExist:
                     pass
-                self.report.currencies.save()
+                # self.report.currencies.save()
                 self.money_in.currencies.save()
                 update_closing_and_account_bal(report=self.report)
                 
             
             elif obj.status == GIVING :
-                setattr(
-                    self.report.currencies,
-                    obj.currency.lower(),
-                    getattr(self.report.currencies, obj.currency.lower(), 0)
-                    + obj.cash,
-                )
+                # setattr(
+                #     self.report.currencies,
+                #     obj.currency.lower(),
+                #     getattr(self.report.currencies, obj.currency.lower(), 0)
+                #     - obj.cash,
+                # )
                 
                 # money out
                 setattr(
                     self.money_out.currencies,
                     obj.currency.lower(),
                     getattr(self.money_out.currencies, obj.currency.lower(), 0)
-                    + obj.cash,
+                    - obj.cash,
                 )
                 
                 try:
@@ -163,13 +162,11 @@ class TransactionHandler:
                     giving_account.currencies.save()
                 except Account.DoesNotExist:
                     pass
-                self.report.currencies.save()
+                # self.report.currencies.save()
                 self.money_out.currencies.save()
                 update_closing_and_account_bal(report=self.report)
-        print('trying to delete receive_give and beneficiaries')
         self.instance.receive_give.all().delete()
         self.instance.beneficiaries.all().delete()
-        print("deleted receive_give and beneficiaries")
         
         
             

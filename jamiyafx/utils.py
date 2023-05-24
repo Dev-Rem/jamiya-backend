@@ -21,6 +21,7 @@ class Dotdict(dict):
 
 def update_closing_and_account_bal(report):
     # get report variables for the report parsed
+    
     closing_bal = ClosingBalance.objects.get(report=report)
     opening_bal = OpeningBalance.objects.get(report=report)
     money_in = MoneyIn.objects.get(report=report)
@@ -30,22 +31,23 @@ def update_closing_and_account_bal(report):
     account = Account.objects.get(bank_name=report.station)
 
     # update account values witht the closing balance calculated with variables for diffrent currencies
-    account.currencies.naira = closing_bal.currencies.naira = (
+    account.currencies.naira = report.currencies.naira = closing_bal.currencies.naira = (
         opening_bal.currencies.naira + money_in.currencies.naira
     ) - money_out.currencies.naira
 
-    account.currencies.dollar = closing_bal.currencies.dollar = (
+    account.currencies.dollar =  report.currencies.dollar = closing_bal.currencies.dollar = (
         opening_bal.currencies.dollar + money_in.currencies.dollar
     ) - money_out.currencies.dollar
 
-    account.currencies.pound = closing_bal.currencies.pound = (
+    account.currencies.pound =  report.currencies.pound = closing_bal.currencies.pound = (
         opening_bal.currencies.pound + money_in.currencies.pound
     ) - money_out.currencies.pound
 
-    account.currencies.euro = closing_bal.currencies.euro = (
+    account.currencies.euro =  report.currencies.euro = closing_bal.currencies.euro = (
         opening_bal.currencies.euro + money_in.currencies.euro
     ) - money_out.currencies.euro
 
+    report.currencies.save()
     closing_bal.currencies.save()
     account.currencies.save()
 
@@ -160,8 +162,7 @@ def calculation_for_general_ledger(data=None):
 
 
 
-def create_beneficiary_receiving_and_giving(receive_give,transaction, beneficiaries = None):
-    print(transaction)
+def create_beneficiary_receiving_and_giving(receive_give,transaction, beneficiaries ):
     for i in receive_give:
         try:
             i.pop('transaction')
@@ -169,12 +170,14 @@ def create_beneficiary_receiving_and_giving(receive_give,transaction, beneficiar
             pass
         obj = ReceiveGive.objects.create(transaction=transaction, **i)
         obj.save()
-    if beneficiaries == None:
-        pass
-    else:
-        for j in beneficiaries:
-            beneficiary = Beneficiary.objects.create(transaction=transaction, **j)
-            beneficiary.save()
+
+    for j in beneficiaries:
+        try:
+            j.pop('transaction')
+        except:
+            pass
+        obj = Beneficiary.objects.create(transaction=transaction, **j)
+        obj.save()
 
 def calc_profit_for_cross_currency(receive_give):
     profit=0

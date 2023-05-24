@@ -4,7 +4,6 @@ from .variables import *
 
 # Create your models here.
 
-
 class Currency(models.Model):
     naira = models.FloatField(verbose_name="Naira Balance", default=0.00)
     dollar = models.FloatField(verbose_name="Dollar Balance", default=0.00)

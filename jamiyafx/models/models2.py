@@ -63,7 +63,7 @@ class Transaction(models.Model):
     )
     receipt_number = ShortUUIDField(length=5,
                                     max_length=5,
-                                    alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", unique=True, default=shortuuid.ShortUUID().random(length=5))
+                                    alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", unique=True, default=shortuuid.ShortUUID().random(length=3))
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )
