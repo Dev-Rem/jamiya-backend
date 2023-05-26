@@ -21,7 +21,7 @@ class Currency(models.Model):
 
 class Rate(models.Model):
     currency = models.CharField(
-        verbose_name="Station", max_length=30, choices=CURRENCIES, default=DOLLAR
+        verbose_name="Currency", max_length=30, choices=CURRENCIES, default=USD
     )
     buying = models.FloatField(verbose_name="Buying Rate", default=0.00)
 

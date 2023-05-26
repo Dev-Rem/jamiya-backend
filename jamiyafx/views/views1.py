@@ -265,9 +265,15 @@ class GeneralLedgerViewSet(viewsets.ModelViewSet):
     queryset = GeneralLedger.objects.all()
     serializer_class = GeneralLedgerSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = MyPagination
+    
 
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = self.get_serializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     # create new general ledger report
     def create(self, request, *args, **kwargs):
@@ -455,8 +461,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
         # pop out beneficiaries data
         beneficiaries = data.pop('beneficiaries')
         # create transaction instance
-        
-        
         serializer = self.serializer_class(data=data, context={'request': request})
         if request.data['category'] == SALES or request.data['category'] == CROSS_CURRENCY:
             serializer.initial_data['profit'] = calc_profit_for_sales(receive_give)
@@ -495,7 +499,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
         # update transaction instance
         serializer = self.serializer_class(instance=instance, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid(raise_exception=True):
-            
             updated_instance = serializer.save()
             create_beneficiary_receiving_and_giving(receive_give=request.data['receive_give'], transaction=updated_instance, beneficiaries=request.data['beneficiaries'])
             transaction_handler = TransactionHandler(updated_instance)

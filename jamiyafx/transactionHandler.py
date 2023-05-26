@@ -20,14 +20,6 @@ class TransactionHandler:
             
             if obj.status == RECEIVING:
             
-                # # report balance
-                # setattr(
-                #     self.report.currencies,
-                #     obj.currency.lower(),
-                #     getattr(self.report.currencies, obj.currency.lower(), 0)
-                #     + obj.cash,
-                # )
-                
                 # money in
                 setattr(
                     self.money_in.currencies,
@@ -56,13 +48,6 @@ class TransactionHandler:
                 update_closing_and_account_bal(report=self.report)
         
             elif obj.status == GIVING :
-            #     setattr(
-            #     self.report.currencies,
-            #     obj.currency.lower(),
-            #     getattr(self.report.currencies, obj.currency.lower(), 0)
-            #     - obj.cash,
-            # )
-            
                 # money out
                 setattr(
                     self.money_out.currencies,
@@ -96,14 +81,6 @@ class TransactionHandler:
             
             if obj.status == RECEIVING:
             
-                # # report balance
-                # setattr(
-                #     self.report.currencies,
-                #     obj.currency.lower(),
-                #     getattr(self.report.currencies, obj.currency.lower(), 0)
-                #     - obj.cash,
-                # )
-                
                 # money in
                 setattr(
                     self.money_in.currencies,
@@ -133,13 +110,6 @@ class TransactionHandler:
                 
             
             elif obj.status == GIVING :
-                # setattr(
-                #     self.report.currencies,
-                #     obj.currency.lower(),
-                #     getattr(self.report.currencies, obj.currency.lower(), 0)
-                #     - obj.cash,
-                # )
-                
                 # money out
                 setattr(
                     self.money_out.currencies,

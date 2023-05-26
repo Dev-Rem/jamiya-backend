@@ -37,6 +37,7 @@ class ClosingBalance(models.Model):
 
 
 class Transaction(models.Model):
+    serial_number = models.CharField(max_length=10, unique=True,  null=True, blank=True)
     payment_status = models.CharField(verbose_name='Beneficiaries', choices=BENEFICIARIES, default=SINGLE_PAYMENT,max_length=1024)
     phone_number = models.CharField(verbose_name="Phone Number", max_length=15, null=True)
     description = models.TextField(verbose_name="Description", max_length=1024)
@@ -61,8 +62,9 @@ class Transaction(models.Model):
     profit = models.FloatField(
         verbose_name="Calculated Profit", default=0.0, blank=True
     )
-    receipt_number = ShortUUIDField(length=5,
-                                    max_length=5,
+    receipt_number = ShortUUIDField(length=3,
+                                    max_length=3,
+                                    editable=False,
                                     alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", unique=True, default=shortuuid.ShortUUID().random(length=3))
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
@@ -72,6 +74,17 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ["-date_created"]
+        
+    
+    def save(self, *args, **kwargs):
+        if not self.serial_number:
+            # Generate the serial number
+            serial_number = Transaction.objects.count() + 1
+
+            # Format the serial number as a string with leading zeros
+            self.serial_number = f"{serial_number:04d}"
+
+        super().save(*args, **kwargs)
 
 class Beneficiary(models.Model):
     transaction = models.ForeignKey(Transaction, related_name='beneficiaries', on_delete=models.CASCADE, null=True)
@@ -108,7 +121,7 @@ class ReceiveGive(models.Model):
     currency = models.CharField(
         verbose_name="Currency Recieved",
         choices=CURRENCIES,
-        default=DOLLAR,
+        default=USD,
         max_length=1024,
     )
     cash = models.FloatField(

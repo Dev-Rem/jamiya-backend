@@ -2,7 +2,7 @@ from jamiyafx.serializers import GeneralLedgerSerializer
 from jamiyafx.models.models2 import *
 from jamiyafx.models.models1 import *
 from jamiyafx.serializers import *
-from jamiyafx.models.variables import PAYABLE, RECIEVABLE, NAIRA, DOLLAR, POUND, EURO
+from jamiyafx.models.variables import PAYABLE, RECIEVABLE, NGN, USD, GBP, EUR
 from django.db.models import Sum
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.request import Request
@@ -101,22 +101,22 @@ def calculation_for_general_ledger(data=None):
     naira_total = (
         account_totals['naira']
         + payable_totals["naira"]
-    ) * Rate.objects.get(currency=NAIRA).buying
+    ) * Rate.objects.get(currency=NGN).buying
 
     dollar_total = (
         account_totals['dollar']
         + payable_totals["dollar"]
-    ) * Rate.objects.get(currency=DOLLAR).buying
+    ) * Rate.objects.get(currency=USD).buying
 
     pound_total = (
         account_totals['pound']
         + payable_totals["pound"]
-    ) * Rate.objects.get(currency=POUND).buying
+    ) * Rate.objects.get(currency=GBP).buying
 
     euro_total = (
         account_totals['euro']
         + payable_totals["euro"]
-    ) * Rate.objects.get(currency=EURO).buying
+    ) * Rate.objects.get(currency=EUR).buying
 
     # calculate curency total
     currency_total = naira_total + dollar_total + pound_total + euro_total

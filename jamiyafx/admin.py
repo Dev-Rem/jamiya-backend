@@ -43,6 +43,7 @@ class ClosingBalanceAdmin(admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = (
+        "serial_number", 
         "receipt_number",
         "initiator",
     )

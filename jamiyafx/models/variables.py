@@ -16,10 +16,10 @@ RELEASED = "RELEASED"
 SUSPENDED = "SUSPENDED"
 LEAVE = "LEAVE"
 
-DOLLAR = "DOLLAR"
-NAIRA = "NAIRA"
-POUND = "POUND"
-EURO = "EURO"
+USD = "USD"
+NGN = "NGN"
+GBP = "GBP"
+EUR = "EUR"
 
 CASH = "CASH"
 TRANSFER = "TRANSFER"
@@ -70,10 +70,10 @@ EMPLOYEE_STATUS = (
 )
 
 CURRENCIES = (
-    (NAIRA, "NAIRA"),
-    (DOLLAR, "DOLLAR"),
-    (POUND, "POUND"),
-    (EURO, "EURO"),
+    (NGN, "NGN"),
+    (USD, "USD"),
+    (GBP, "GBP"),
+    (EUR, "EUR"),
 )
 
 MODE = (

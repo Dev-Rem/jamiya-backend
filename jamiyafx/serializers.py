@@ -105,7 +105,8 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = ["id",
-            "phone_number",
+                  "serial_number",            
+                  "phone_number",
             "description",
             "initiator",
             "status",
