@@ -31,21 +31,21 @@ def update_closing_and_account_bal(report):
     account = Account.objects.get(bank_name=report.station)
 
     # update account values witht the closing balance calculated with variables for diffrent currencies
-    account.currencies.naira = report.currencies.naira = closing_bal.currencies.naira = (
-        opening_bal.currencies.naira + money_in.currencies.naira
-    ) - money_out.currencies.naira
+    account.currencies.ngn = report.currencies.ngn = closing_bal.currencies.ngn = (
+        opening_bal.currencies.ngn + money_in.currencies.ngn
+    ) - money_out.currencies.ngn
 
-    account.currencies.dollar =  report.currencies.dollar = closing_bal.currencies.dollar = (
-        opening_bal.currencies.dollar + money_in.currencies.dollar
-    ) - money_out.currencies.dollar
+    account.currencies.usd =  report.currencies.usd = closing_bal.currencies.usd = (
+        opening_bal.currencies.usd + money_in.currencies.usd
+    ) - money_out.currencies.usd
 
-    account.currencies.pound =  report.currencies.pound = closing_bal.currencies.pound = (
-        opening_bal.currencies.pound + money_in.currencies.pound
-    ) - money_out.currencies.pound
+    account.currencies.gbp =  report.currencies.gbp = closing_bal.currencies.gbp = (
+        opening_bal.currencies.gbp + money_in.currencies.gbp
+    ) - money_out.currencies.gbp
 
-    account.currencies.euro =  report.currencies.euro = closing_bal.currencies.euro = (
-        opening_bal.currencies.euro + money_in.currencies.euro
-    ) - money_out.currencies.euro
+    account.currencies.eur =  report.currencies.eur = closing_bal.currencies.eur = (
+        opening_bal.currencies.eur + money_in.currencies.eur
+    ) - money_out.currencies.eur
 
     report.currencies.save()
     closing_bal.currencies.save()
@@ -54,15 +54,15 @@ def update_closing_and_account_bal(report):
 
 # function to get customer ledger totals
 def get_currency_total(objects):
-    totals = {"naira": 0, "dollar": 0, "pound": 0, "euro": 0}
+    totals = {"ngn": 0, "usd": 0, "gbp": 0, "eur": 0}
 
     if objects.count() >= 1:
         for ledger in objects:
             curencies = Currency.objects.get(id=ledger.currencies.id)
-            totals['naira'] += curencies.naira
-            totals['dollar'] += curencies.dollar
-            totals['pound'] += curencies.pound
-            totals['euro'] += curencies.euro
+            totals['ngn'] += curencies.ngn
+            totals['usd'] += curencies.usd
+            totals['gbp'] += curencies.gbp
+            totals['eur'] += curencies.eur
 
     else:
         pass
@@ -98,37 +98,37 @@ def calculation_for_general_ledger(data=None):
         if serializer.is_valid(raise_exception=True):
             data = Dotdict(serializer.data)
     # Get the total sum of all accounts for the four currencies and substract the values in payable then multiply by current rate
-    naira_total = (
-        account_totals['naira']
-        + payable_totals["naira"]
+    ngn_total = (
+        account_totals['ngn']
+        + payable_totals["ngn"]
     ) * Rate.objects.get(currency=NGN).buying
 
-    dollar_total = (
-        account_totals['dollar']
-        + payable_totals["dollar"]
+    usd_total = (
+        account_totals['usd']
+        + payable_totals["usd"]
     ) * Rate.objects.get(currency=USD).buying
 
-    pound_total = (
-        account_totals['pound']
-        + payable_totals["pound"]
+    gbp_total = (
+        account_totals['gbp']
+        + payable_totals["gbp"]
     ) * Rate.objects.get(currency=GBP).buying
 
-    euro_total = (
-        account_totals['euro']
-        + payable_totals["euro"]
+    eur_total = (
+        account_totals['eur']
+        + payable_totals["eur"]
     ) * Rate.objects.get(currency=EUR).buying
 
     # calculate curency total
-    currency_total = naira_total + dollar_total + pound_total + euro_total
+    currency_total = ngn_total + usd_total + gbp_total + eur_total
     # assign values to the data
-    general_ledger_currencies.naira = naira_total
-    general_ledger_currencies.dollar = dollar_total
-    general_ledger_currencies.pound = pound_total
-    general_ledger_currencies.euro = euro_total
+    general_ledger_currencies.ngn = ngn_total
+    general_ledger_currencies.usd = usd_total
+    general_ledger_currencies.gbp = gbp_total
+    general_ledger_currencies.eur = eur_total
     data.currency_total = currency_total
     general_ledger_currencies.save()
     # calculate for grand total
-    data.grand_total = currency_total + recievable_totals["naira"]
+    data.grand_total = currency_total + recievable_totals["ngn"]
     # try to get previous general ledger grand total and assign to prervious total of current day
     try:
         queryset = GeneralLedger.objects.order_by(

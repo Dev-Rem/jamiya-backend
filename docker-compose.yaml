@@ -2,7 +2,11 @@ version: "3"
 
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - TAG_NAME=mytag
     command: >
       sh -c "python3.8 manage.py runserver 0.0.0.0:8000"
     env_file: 

@@ -16,6 +16,11 @@ class TransactionHandler:
         self.money_out = MoneyOut.objects.get(report=self.report)
         
     def handle_receive_give(self):
+        setattr(
+                    self.report,
+                   "profit",
+                    getattr(self.report, "profit", 0) + self.instance.profit
+                )  
         for obj in self.receive_give:
             
             if obj.status == RECEIVING:
@@ -77,6 +82,11 @@ class TransactionHandler:
                 
                 
     def reverse_transaction(self):
+        setattr(
+                    self.report,
+                    "profit",
+                    getattr(self.report, "profit", 0) - self.instance.profit
+                )  
         for obj in self.receive_give:
             
             if obj.status == RECEIVING:

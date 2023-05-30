@@ -41,10 +41,10 @@ def create_complete_report(sender, instance, created, **kwargs):
             report=previous_report)
 
         # Assign previous day closing balance to current(instance) opening balance
-        instance.currencies.naira = opening_bal.currencies.naira = previous_closing_bal.currencies.naira
-        instance.currencies.dollar = opening_bal.currencies.dollar = previous_closing_bal.currencies.dollar
-        instance.currencies.pound = opening_bal.currencies.pound = previous_closing_bal.currencies.pound
-        instance.currencies.euro = opening_bal.currencies.euro = previous_closing_bal.currencies.euro
+        instance.currencies.ngn = opening_bal.currencies.ngn = previous_closing_bal.currencies.ngn
+        instance.currencies.usd = opening_bal.currencies.usd = previous_closing_bal.currencies.usd
+        instance.currencies.gbp = opening_bal.currencies.gbp = previous_closing_bal.currencies.gbp
+        instance.currencies.eur = opening_bal.currencies.eur = previous_closing_bal.currencies.eur
 
 
         # update closing balance

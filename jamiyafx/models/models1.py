@@ -5,10 +5,10 @@ from .variables import *
 # Create your models here.
 
 class Currency(models.Model):
-    naira = models.FloatField(verbose_name="Naira Balance", default=0.00)
-    dollar = models.FloatField(verbose_name="Dollar Balance", default=0.00)
-    pound = models.FloatField(verbose_name="Pound Balance", default=0.00)
-    euro = models.FloatField(verbose_name="Euro Balance", default=0.00)
+    ngn = models.FloatField(verbose_name="ngn Balance", default=0.00)
+    usd = models.FloatField(verbose_name="Dollar Balance", default=0.00)
+    gbp = models.FloatField(verbose_name="Pound Balance", default=0.00)
+    eur = models.FloatField(verbose_name="Euro Balance", default=0.00)
     date_created = models.DateField(
         verbose_name="Date Added", auto_now=False, auto_now_add=True
     )

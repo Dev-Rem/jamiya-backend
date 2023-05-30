@@ -80,4 +80,4 @@ class ReceiptAdmin(admin.ModelAdmin):
 
 @admin.register(Currency)
 class CurrencyAdmin(admin.ModelAdmin):
-    list_display = ('naira', "dollar", "pound", "euro", "date_created")
+    list_display = ('ngn', "usd", "gbp", "eur", "date_created")

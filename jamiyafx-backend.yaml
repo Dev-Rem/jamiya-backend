@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: jamiyafx-backend
+  name: jamiyafx-backend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1  
+      maxSurge: 1 
+  selector:
+    matchLabels:
+      app: jamiyafx-backend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: jamiyafx-backend
+    spec:
+      containers:
+      - image: docker.io/devrem/jamiya:backend-v3
+        name: jamiyafx
+        env:
+        - name: DEPLOYMENT_ENV_FILE
+          value: /deployment.env
+        - name: REDIS_HOST
+          value: redis-service
+        - name: REDIS_PORT
+          value: "6379"
+        ports:
+            - containerPort: 8000
+        volumeMounts:
+          - mountPath: /var/log/
+            name: jamiyafx-backend
+        command: ["/bin/sh", "-c"]
+        args:
+          - apt-get update;
+            apt-get -y install vim;
+            pip install -r requirements.txt
+            python manage.py makemigrations;
+            python manage.py migrate;
+            python manage.py runserver 0.0.0.0:8000
+      volumes:
+        - name: jamiyafx-backend
+          hostPath:
+            path: /var/log/
+status: {}

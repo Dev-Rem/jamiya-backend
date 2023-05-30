@@ -142,15 +142,4 @@ class GeneralLedgerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GeneralLedger
-        fields = [
-            "currencies",
-            "currency_total",
-            "grand_total",
-            "previous_total",
-            "difference",
-            "expense",
-            "book_profit",
-            "calculated_profit",
-            "variance",
-            'date_created'
-        ]
+        fields = "__all__"

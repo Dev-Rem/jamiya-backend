@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: jamiyafx-frontend
+  name: jamiyafx-frontend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1  # Maximum number of pods that can be unavailable during the update
+      maxSurge: 1 
+  selector:
+    matchLabels:
+      app: jamiyafx-frontend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: jamiyafx-frontend
+    spec:
+      containers:
+      - image: docker.io/devrem/jamiya:frontend-v3
+        name: jamiyafx
+        ports:
+          - containerPort: 3000
+        volumeMounts:
+          - mountPath: /var/log/
+            name: jamiyafx-frontend
+        command: ["npm", "start"]
+        
+      volumes:
+        - name: jamiyafx-frontend
+          hostPath:
+            path: /var/log/
+status: {}

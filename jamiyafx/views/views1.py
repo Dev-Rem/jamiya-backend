@@ -462,8 +462,12 @@ class TransactionViewSet(viewsets.ModelViewSet):
         beneficiaries = data.pop('beneficiaries')
         # create transaction instance
         serializer = self.serializer_class(data=data, context={'request': request})
+        instance = Report.objects.filter(
+            station=request.data['initiator']).order_by('-date_created').first()
         if request.data['category'] == SALES or request.data['category'] == CROSS_CURRENCY:
-            serializer.initial_data['profit'] = calc_profit_for_sales(receive_give)
+            profit = calc_profit_for_sales(receive_give)
+            instance.profit += profit
+            serializer.initial_data['profit'] = profit
         if serializer.is_valid(raise_exception=True):
             instance = serializer.save()
             # use the transaction instance to create receive_give and beneficiaries

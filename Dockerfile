@@ -5,11 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 
 WORKDIR /usr/src/jamiya
 
-COPY ./requirement.txt /usr/src/jamiya/
+COPY ./requirements.txt /usr/src/jamiya/
 
 COPY . /usr/src/jamiya/
 
-RUN pip install -r requirement.txt
+RUN pip install -r requirements.txt
 
 
 

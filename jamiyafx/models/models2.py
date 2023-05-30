@@ -37,7 +37,7 @@ class ClosingBalance(models.Model):
 
 
 class Transaction(models.Model):
-    serial_number = models.CharField(max_length=10, unique=True,  null=True, blank=True)
+    serial_number = models.CharField(unique=True, default=00000, blank=True,null=True, max_length=10) 
     payment_status = models.CharField(verbose_name='Beneficiaries', choices=BENEFICIARIES, default=SINGLE_PAYMENT,max_length=1024)
     phone_number = models.CharField(verbose_name="Phone Number", max_length=15, null=True)
     description = models.TextField(verbose_name="Description", max_length=1024)
@@ -77,12 +77,13 @@ class Transaction(models.Model):
         
     
     def save(self, *args, **kwargs):
-        if not self.serial_number:
-            # Generate the serial number
-            serial_number = Transaction.objects.count() + 1
-
-            # Format the serial number as a string with leading zeros
-            self.serial_number = f"{serial_number:04d}"
+        if not self.pk:  # Only on creation of a new object
+            latest_transaction = Transaction.objects.order_by('-serial_number').first()
+            if latest_transaction:
+                new_serial_number = int(latest_transaction.serial_number) + 1
+                self.serial_number = f"{new_serial_number:05d}"
+            else:
+                self.serial_number = '00001'  # If no existing transactions, start with '00001'
 
         super().save(*args, **kwargs)
 
