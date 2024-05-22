@@ -93,7 +93,7 @@ DATABASES = {
         "NAME": config("POSTGRES_DB"),
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
-        "HOST": "db",
+        "HOST": "localhost",
         "PORT": 5432,
     }
 }
@@ -192,14 +192,14 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS_ORIGIN_WHITELIST = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
 CORS_ALLOW_METHODS = (
     "DELETE",
     "GET",
